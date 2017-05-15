@@ -5,6 +5,7 @@ django-taggit==0.22.1
 djangorestframework==3.6.2
 gunicorn==19.7.1
 packaging==16.8
+psycopg2==2.7.1
 pyparsing==2.2.0
 pytz==2017.2
 six==1.10.0
