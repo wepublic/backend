@@ -7,6 +7,7 @@ from users.serializers import RegisterSerializer
 from django.contrib.auth.models import User
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from users.permissions import IsAllowedToViewAndChangeUsers
 # Create your views here.
 
 class RegisterAPIView(CreateAPIView):
@@ -32,8 +33,17 @@ class RegisterAPIView(CreateAPIView):
 class LogOutAPIView(APIView):
     queryset = User.objects.all()
     permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
 
     def get(self, request, format=None):
+        
         request.user.auth_token.delete()
         return Response(status=status.HTTP_200_OK)
+
+class UserViewAPI(APIView):
+    permission_classes = (IsAuthenticated, IsAllowedToViewAndChangeUsers)
+    queryset = User.objects.all()
+    
+
+
 

@@ -7,7 +7,7 @@ class Tag(models.Model):
     text = models.CharField(max_length=64)
 
     def __str__(self):
-        return "TAG[id: %s, tag: %s]" % (self.pk, self.text)
+        return "#%s" % self.text
 
 
 
@@ -24,18 +24,18 @@ class Question(models.Model):
     tags = models.ManyToManyField(Tag, related_name="questions")
     time_created = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
-    votes = models.ManyToManyField(Userprofile, through="VoteQuestion", related_name='votes')
+    votes = models.ManyToManyField(User, through="VoteQuestion", related_name='votes')
     creator = models.ForeignKey(User)
 
     def __str__(self):
-        return "[ id: %s, creator: %s ]" % ( self.pk, self.creator.username )
+        return "%s: \"%s\", %s " % (self.pk, self.text, self.creator.username)
 
 
 class VoteQuestion(models.Model):
     class Meta:
         unique_together = ['question', 'user']
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    user = models.ForeignKey(Userprofile, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     time_created = models.DateTimeField(auto_now_add=True)
 
 
@@ -45,6 +45,9 @@ class Answer(models.Model):
     last_modified = models.DateTimeField(auto_now=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "%s: %s -> %s" % (self.pk, self.text, self.question.pk)
 
 class VoteAnswer(models.Model):
     class Meta:
