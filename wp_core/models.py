@@ -28,6 +28,7 @@ class VoteQuestion(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     time_created = models.DateTimeField(auto_now_add=True)
+    up = models.BooleanField(default=True)
 
 
 class Answer(models.Model):

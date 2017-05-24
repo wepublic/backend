@@ -49,9 +49,14 @@ class QuestionSerializer(serializers.ModelSerializer):
     tags = SmallTagSerializer (
         many = True,
     )
-    votes = serializers.SerializerMethodField(
+    upvotes = serializers.SerializerMethodField(
         read_only=True,
     )
+
+    downvotes = serializers.SerializerMethodField(
+        read_only=True,
+    )
+
 
     creator = SmallUserSerializer(
         read_only = True,
@@ -61,15 +66,11 @@ class QuestionSerializer(serializers.ModelSerializer):
         model = Question
         fields = '__all__'
 
-    def get_votes(self, obj):
-        return obj.votes.count()
+    def get_upvotes(self, obj):
+        return obj.votes.filter(votequestion__up=True).count()
 
-
-class UserprofileSerializer(serializers.HyperlinkedModelSerializer):
-    user = SmallUserSerializer()
-    class Meta:
-        model = Userprofile
-        fields = '__all__'
+    def get_downvotes(self, obj):
+        return obj.votes.filter(votequestion__up=False).count()
 
 
 class AnswerSerializer(serializers.ModelSerializer):
