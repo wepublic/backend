@@ -10,15 +10,6 @@ class Tag(models.Model):
         return "#%s" % self.text
 
 
-
-class Userprofile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    reputation = models.IntegerField(default=0)
-
-    def __str__(self):
-        return "USERPROFILE:[id: %s, username: %s]" % (self.pk, self.user.username)
-
-
 class Question(models.Model):
     text = models.TextField(max_length=500)
     tags = models.ManyToManyField(Tag, related_name="questions")

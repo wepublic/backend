@@ -19,21 +19,17 @@ from rest_framework.routers import DefaultRouter
 from rest_framework.authtoken import views
 
 from wp_core.views import *
+from users.views import *
 
 from wepublic_backend import settings
 
 router = DefaultRouter()
 router.register(r'Tags', TagViewSet)
 router.register(r'Questions', QuestionsViewSet)
-router.register(r'Userprofiles', UserprofileViewSet)
-router.register(r'auth/users', UserViewSet)
 router.register(r'Answers', AnswerViewSet )
-
-
+router.register(r'Users', UserViewSet)
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^auth/', include('users.urls'))
-    
 ]
 urlpatterns += router.urls
 

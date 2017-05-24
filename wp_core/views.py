@@ -24,10 +24,6 @@ class UserprofileViewSet(viewsets.ModelViewSet):
     queryset = Userprofile.objects.all()
     serializer_class = UserprofileSerializer
 
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
 class AnswerViewSet(viewsets.ModelViewSet):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
