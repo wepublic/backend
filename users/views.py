@@ -72,8 +72,6 @@ class UserViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
 
         user = serializer.instance
-        userprofile = Userprofile(user=user)
-        userprofile.save()
         token, created = Token.objects.get_or_create(user=user)
         data = serializer.data
         data["token"] = token.key
