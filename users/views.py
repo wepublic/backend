@@ -18,14 +18,26 @@ from rest_framework import exceptions
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows users to be viewed or edited.
+
+    retrieve:
+    Return a user instance.
+
+    list:
+    Return all users, ordered by most recently joined.
+
+    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [UserViewPermission]
 
     @list_route(methods=['post'])
     def token(self, request):
-        print(request.POST)
-        user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
+        """
+        Acquire an API token by posting your credentials
+        """
+        user = authenticate(request, username=request.data['username'], password=request.data['password'])
         if user is not None:
             token, su = Token.objects.get_or_create(user=user)
             response = {'Token': token.key }
@@ -61,6 +73,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
         user = serializer.instance
         userprofile = Userprofile(user=user)
+        userprofile.save()
         token, created = Token.objects.get_or_create(user=user)
         data = serializer.data
         data["token"] = token.key
