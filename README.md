@@ -85,12 +85,14 @@ Dieser Endpoint stellt funktionen zum allgemeinen Usermanagement bereit. Folgend
 - POST: 
     Neue Nutzer können hier angelegt werden. Als json wird dann das user object geschickt.
     Benötigte felder sind:
+    ```
     username
     password
     email
     Optional sind:
     first_name
     last_name
+    ```
 
 ### `/Users/{pk}`
 - GET:
@@ -133,7 +135,7 @@ Stellt rudimentäres question management bereit
 #### `/Questions/`
 - GET:
     Gibt eine List der neuesten Fragen zurück. Das ergebnis hat folgendes Format:
-    
+    ```
     {
       "count": 123,
       "next": "http://example.com/Questions/?page=3",
@@ -157,11 +159,13 @@ Stellt rudimentäres question management bereit
             .... Andere Fragen
       ]
     }
+    ```
 
     Die Pagination beschränkt die Ergebnisse pro anfrage auf 50. Sollen die nächsten 50 ergebnisse geladen werden, muss ?page=n angehängt werden. Links zur nächsten und vorigen seiten
     werden mitgeschickt. 
 - POST:
     erstellt eine neue Frage. Akzeptiert folgendes Objekt:
+    ```
     {
         "text": "Fragetext"
         "tags": [
@@ -170,6 +174,7 @@ Stellt rudimentäres question management bereit
             52
         ]
     }
+    ```
 
 #### `/Questions/{pk}/`
 - GET:
@@ -182,6 +187,7 @@ Stellt rudimentäres question management bereit
 #### `/Questions/{pk}/tags/
 - GET:
     Gibt die Liste der Tags der Frage mit der id {pk} zurück. inklusive Text der tags:
+    ```
     [
       {
         "id": 4,
@@ -189,6 +195,7 @@ Stellt rudimentäres question management bereit
       },
       ... andere Tags
     ]
+    ```
 
 #### `/Questions/{pk}/upvote/`
 - POST:
