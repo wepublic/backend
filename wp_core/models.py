@@ -18,6 +18,9 @@ class Question(models.Model):
     votes = models.ManyToManyField(User, through="VoteQuestion", related_name='votes')
     creator = models.ForeignKey(User)
 
+    class Meta:
+        get_latest_by = 'time_created'
+
     def __str__(self):
         return "%s: \"%s\", %s " % (self.pk, self.text, self.creator.username)
 
