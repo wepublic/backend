@@ -4,4 +4,4 @@ __pycache__
 *.pyc
 htmlcov/
 .coverage
-wepublic/staticfiles/
+wepublic_backend/staticfiles/
