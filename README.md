@@ -109,7 +109,7 @@ Dieser Endpoint stellt funktionen zum allgemeinen Usermanagement bereit. Folgend
     
 ### `/Users/token/`
 - POST:
-    Gibt den token zurück wenn ein json object mit den feldern username und password und den richtigen werten geschickt wird
+    Gibt den token zurück wenn ein json object mit den feldern email und password und den richtigen werten geschickt wird
     Hier muss kein Token mitgeschickt werden.
 ### `/Users/logout/`
 - GET:

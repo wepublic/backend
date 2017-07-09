@@ -1,31 +1,9 @@
 from rest_framework import serializers
 from wp_core.models import *
-from users.models import Userprofile
-from django.contrib.auth.models import User
+from users.models import User
+from users.serializers import UserLinkSerializer
 from rest_framework.permissions import AllowAny
 from wp_core.permissions import IsStaffOrTargetUser
-
-
-class SmallUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('id', 'username')
-        
-
-class UserLinkSerializer(serializers.HyperlinkedModelSerializer):
-
-    class Meta:
-        model = User
-        fields = ('url','username')
-class SmallQuestionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Question
-        fields = ('id', 'text')
-
-class SmallTagSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tag
-        fields = ('id','text')
 
 class TagSerializer(serializers.ModelSerializer):
 
@@ -34,35 +12,32 @@ class TagSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class AnswerLinkSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    class Meta:
+        model = Answer
+        fields = ('id', 'user')
+
 class QuestionSerializer(serializers.ModelSerializer):
 
-    upvotes = serializers.SerializerMethodField(
-        read_only=True,
-    )
-
-    downvotes = serializers.SerializerMethodField(
-        read_only=True,
-    )
-
-
-    creator = SmallUserSerializer(
-        read_only = True,
-    )
-
+    upvotes = serializers.IntegerField(read_only=True)
+    voted = serializers.SerializerMethodField(read_only=True)
+    answers = AnswerLinkSerializer(many=True, read_only=True)
+    user = UserLinkSerializer(read_only=True)
     class Meta:
         model = Question
         #fields = '__all__'
         exclude = ('votes',)
 
-    def get_upvotes(self, obj):
-        return obj.votes.filter(votequestion__up=True).count()
-
-    def get_downvotes(self, obj):
-        return obj.votes.filter(votequestion__up=False).count()
+    def get_voted(self, obj):
+        if 'request' in self.context and self.context['request'].user != None:
+            return self.context['request'].user in obj.votes.all()
+        else:
+            return False
 
     def create(self, validated_data):
         user =  self.context['request'].user
-        question = Question(creator = user, text=validated_data['text'])
+        question = Question(user = user, text=validated_data['text'])
         question.save()
         for tag in validated_data['tags']:
             question.tags.add(tag)
@@ -83,13 +58,36 @@ class QuestionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Question already exists')
         return value
 
+class QuestionLinkSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta: 
+        model = Question
+        fields = ('url', 'text', 'id')
+
 class AnswerSerializer(serializers.ModelSerializer):
-    created_by = serializers.PrimaryKeyRelatedField(
-        queryset = User.objects.all(),
-    )
-    question = serializers.PrimaryKeyRelatedField(
-        queryset = Question.objects.all()
-    )
+    user = UserLinkSerializer()
+    question = QuestionLinkSerializer(read_only=True)
+    upvotes = serializers.IntegerField(read_only=True)
+    voted = serializers.SerializerMethodField(read_only=True)
+    class Meta:
+        model = Answer
+        exclude = ('votes',)
+    def get_voted(self, obj):
+        if 'request' in self.context and self.context['request'].user != None:
+            return self.context['request'].user in obj.votes.all()
+        else:
+            return False
+
+class AnswerPostSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    question = serializers.PrimaryKeyRelatedField(queryset=Question.objects.all())
+    upvotes = serializers.IntegerField(read_only=True)
+    voted = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Answer
         fields = "__all__"
+
+    def get_voted(self, obj):
+        if 'request' in self.context and self.context['request'].user != None:
+            return self.context['request'].user in obj.votes.all()
+        else:
+            return False

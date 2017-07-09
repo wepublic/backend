@@ -1,6 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
-from taggit.managers import TaggableManager
+from users.models import User
 # Create your models here.
 
 class Tag(models.Model):
@@ -16,13 +15,14 @@ class Question(models.Model):
     time_created = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
     votes = models.ManyToManyField(User, through="VoteQuestion", related_name='votes')
-    creator = models.ForeignKey(User)
+    user = models.ForeignKey(User)
 
     class Meta:
         get_latest_by = 'time_created'
 
     def __str__(self):
-        return "%s: \"%s\", %s " % (self.pk, self.text, self.creator.username)
+        return "%s: \"%s\", %s " % (self.pk, self.text, self.user.email)
+
 
 
 class VoteQuestion(models.Model):
@@ -38,16 +38,17 @@ class Answer(models.Model):
     text = models.TextField(max_length=5000)
     time_created = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    votes = models.ManyToManyField(User, through="VoteAnswer", related_name='votes_answer')
 
     def __str__(self):
         return "%s: %s -> %s" % (self.pk, self.text, self.question.pk)
 
 class VoteAnswer(models.Model):
     class Meta:
-        unique_together = ['question', 'user']
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+        unique_together = ['answer', 'user']
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     time_created = models.DateTimeField(auto_now_add=True)
     up = models.BooleanField()

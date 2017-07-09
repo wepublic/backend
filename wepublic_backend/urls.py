@@ -18,20 +18,23 @@ from django.contrib import admin
 from rest_framework.routers import DefaultRouter
 from rest_framework.authtoken import views
 
+from django.conf import settings
 from wp_core.views import *
+from wp_core.views_answers import AnswerViewSet
 from users.views import *
-
-from wepublic_backend import settings
+from wp_news.views import *
 
 router = DefaultRouter()
 router.register(r'Tags', TagViewSet)
 router.register(r'Questions', QuestionsViewSet)
 router.register(r'Answers', AnswerViewSet )
 router.register(r'Users', UserViewSet)
+router.register(r'News', NewsEntryViewSet )
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
 ]
 urlpatterns += router.urls
+
 
 
 def print_url_pattern_names(patterns):
@@ -46,3 +49,5 @@ def print_url_pattern_names(patterns):
  
 if settings.DEBUG:
     print_url_pattern_names(urlpatterns)
+    from django.conf.urls.static import static
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

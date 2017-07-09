@@ -2,17 +2,23 @@ from django.shortcuts import render
 
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from django.contrib.auth.models import User
+from users.models import User
 from rest_framework import status
 from rest_framework import viewsets
+from rest_framework import filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
+from rest_framework.exceptions import NotFound
 
+from django.db.models import Sum, When, Case, IntegerField
+
+from random import randint
 from wp_core.models import *
 from wp_core.serializers import *
 from wp_core.permissions import OnlyStaffCanModify, StaffOrOwnerCanModify
 from wp_core.pagination import NewestQuestionsSetPagination
+import time
 # Create your views here.
 
 
@@ -22,16 +28,26 @@ class TagViewSet(viewsets.ModelViewSet):
     serializer_class = TagSerializer
 
     @detail_route(methods=['get'], pagination_class=NewestQuestionsSetPagination)
-    def questions(self, request, pk=None):
+    def Questions(self, request, pk=None):
         questions = get_object_or_404(Tag,pk=pk).questions
-        ser = QuestionSerializer(questions, many=True)
+        ser = QuestionSerializer(questions, many=True, context={'request': request})
         return Response(ser.data)
 
 class QuestionsViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly, StaffOrOwnerCanModify]
-    queryset = Question.objects.all().order_by('-time_created')
+    queryset = Question.objects.annotate(
+                upvotes=Sum(
+                        Case(
+                            When(votequestion__up=True, then=1),
+                            output_field=IntegerField()
+                        )
+                    )
+            )
     serializer_class = QuestionSerializer
     pagination_class = NewestQuestionsSetPagination
+    filter_backends = (filters.OrderingFilter,)
+    ordering_fields = ('time_created','upvotes' )
+    ordering = ('-time_created')
 
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -42,19 +58,34 @@ class QuestionsViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['get'], permission_classes=[IsAuthenticated])
     def my(self, request):
-        questions = Question.objects.filter(creator=request.user)
+        questions = self.get_queryset().filter(user=request.user)
         serializer = self.get_serializer(questions, many=True)
         return Response(serializer.data)
 
     @detail_route(methods=['get'])
     def tags(self, request, pk=None):
-        question = get_object_or_404(Question, pk=pk)
+
+        try:
+            question = self.get_queryset().get(pk=pk)
+        except Question.DoesNotExist:
+            raise NotFound(detail='Question with the id %s does not exist' % pk)
+
         serializer = TagSerializer(question.tags, many=True)
         return Response(serializer.data)
 
+    @list_route(methods=['get'], permission_classes=[IsAuthenticated])
+    def random(self, request):
+        questions = self.get_queryset().exclude(votequestion__user=request.user).filter(answers=None)
+        questions_length = questions.count()
+        return Response(self.get_serializer(questions[randint(0, questions_length-1)]).data)
+
     @detail_route(methods=['post'], permission_classes=[IsAuthenticated])
     def upvote(self, request, pk=None):
-        question = get_object_or_404(Question, pk=pk)
+        
+        try:
+            question = self.get_queryset().get(pk=pk)
+        except Question.DoesNotExist:
+            raise NotFound(detail='Question with the id %s does not exist' % pk)
         user = request.user
         if VoteQuestion.objects.filter(question=question, user=user, up=False).exists():
             VoteQuestion.objects.get(question=question, user=user, up=False).delete()
@@ -64,27 +95,30 @@ class QuestionsViewSet(viewsets.ModelViewSet):
         else:
             vote = VoteQuestion(question=question, user=user, up=True)
             vote.save()
+        question = self.get_queryset().get(pk=pk)
         return Response(self.get_serializer(question).data)
 
     @list_route(methods=['get'], permission_classes=[IsAuthenticated])
     def upvotes(self, request):
         user = request.user
-        questions = user.votes.all().filter(votequestion__up = True)[::1]
-        print(questions)
+        questions = self.get_queryset().filter(votequestion__up=True, votequestion__user=user) 
+        questions = filters.OrderingFilter().filter_queryset(self.request, questions, self)
+        #questions = user.votes.all().filter(votequestion__up = True)[::1]
         return Response(self.get_serializer(questions, many=True).data)
 
     @list_route(methods=['get'], permission_classes=[IsAuthenticated])
     def downvotes(self, request):
         user = request.user
-        questions = user.votes.all().filter(votequestion__up = False)[::1]
-        print(questions)
+        questions = self.get_queryset().filter(votequestion__up=False, votequestion__user=user)
+        #questions = user.votes.all().filter(votequestion__up = False)[::1]
         return Response(self.get_serializer(questions, many=True).data)
-
-
 
     @detail_route(methods=['post'], permission_classes=[IsAuthenticated])
     def downvote(self, request, pk=None):
-        question = get_object_or_404(Question, pk=pk)
+        try:
+            question = self.get_queryset().get(pk=pk)
+        except Question.DoesNotExist:
+            raise NotFound(detail='Question with the id %s does not exist' % pk)
         user = request.user
         if VoteQuestion.objects.filter(question=question, user=user, up=True).exists():
             VoteQuestion.objects.get(question=question, user=user, up=True).delete()
@@ -93,8 +127,8 @@ class QuestionsViewSet(viewsets.ModelViewSet):
         else:
             vote = VoteQuestion(question=question, user=user, up=False)
             vote.save()
+
+        question = self.get_queryset().get(pk=pk)
         return Response(self.get_serializer(question).data, status=status.HTTP_201_CREATED)
 
-class AnswerViewSet(viewsets.ModelViewSet):
-    queryset = Answer.objects.all()
-    serializer_class = AnswerSerializer
+    

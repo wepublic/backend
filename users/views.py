@@ -3,15 +3,14 @@ from rest_framework.authtoken.models import Token
 from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route, list_route
 from users.permissions import UserViewPermission
-from users.models import Userprofile
-from users.serializers import RegisterSerializer, UserSerializer, TokenSerializer
+from users.models import User
+from users.serializers import UserSerializer, TokenSerializer
 from users import utils
 from rest_framework import exceptions
 # Create your views here.
@@ -37,7 +36,9 @@ class UserViewSet(viewsets.ModelViewSet):
         """
         Acquire an API token by posting your credentials
         """
-        user = authenticate(request, username=request.data['username'], password=request.data['password'])
+        if not 'email' in request.data or not 'password' in request.data:
+            raise exceptions.ParseError(detail="email and/or password field missing")
+        user = authenticate(request, email=request.data['email'], password=request.data['password'])
         if user is not None:
             token, su = Token.objects.get_or_create(user=user)
             response = {'Token': token.key }
@@ -47,7 +48,7 @@ class UserViewSet(viewsets.ModelViewSet):
         
     @list_route(methods=['get'],authentication_classes=[TokenAuthentication], permission_classes=[IsAuthenticated])
     def logout(self, request):
-        user = self.get_object()
+        user = request.user
         Token.objects.get(user=user).delete()
         response = {'status':'logged out'}
         return Response(response)
@@ -60,18 +61,22 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def list(self, request):
+        print('in list')
         if utils.is_staff_user(request.user):
-            serializer = self.get_serializer(self.get_queryset(), many=True)
+            serializer = UserSerializer(User.objects.all(), many=True)
         else:
             raise exceptions.PermissionDenied
         return Response(serializer.data)
 
     def create(self, request):
+        print(request.data)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
 
         user = serializer.instance
+        user.is_active=True
+        user.save()
         token, created = Token.objects.get_or_create(user=user)
         data = serializer.data
         data["token"] = token.key
@@ -97,25 +102,25 @@ class UserViewSet(viewsets.ModelViewSet):
         
 
 
-class RegisterAPIView(CreateAPIView):
-    authentication_classes = ()
-    permission_classes = ()
-    serializer_class = RegisterSerializer
-
-    def create(self, request, *args, **kwargs):
-        #create the Serializer and validate
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-
-        # create and return token
-        user = serializer.instance
-        token, created = Token.objects.get_or_create(user=user)
-        data = serializer.data
-        data["token"] = token.key
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(data, status=status.HTTP_201_CREATED, headers=headers)
+#class RegisterAPIView(CreateAPIView):
+#    authentication_classes = ()
+#    permission_classes = ()
+#    serializer_class = RegisterSerializer
+#
+#    def create(self, request, *args, **kwargs):
+#        #create the Serializer and validate
+#        serializer = self.get_serializer(data=request.data)
+#        serializer.is_valid(raise_exception=True)
+#        self.perform_create(serializer)
+#
+#        # create and return token
+#        user = serializer.instance
+#        token, created = Token.objects.get_or_create(user=user)
+#        data = serializer.data
+#        data["token"] = token.key
+#
+#        headers = self.get_success_headers(serializer.data)
+#        return Response(data, status=status.HTTP_201_CREATED, headers=headers)
 
 class LogOutAPIView(APIView):
     queryset = User.objects.all()
