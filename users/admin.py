@@ -1,24 +1,31 @@
 from django.contrib import admin
 from users.models import User
 from django import forms
-from django.contrib import admin
-from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
-
-# Register your models here.
-
 
 
 class UserCreationForm(forms.ModelForm):
     """A form for creating new users. Includes all the required
     fields, plus a repeated password."""
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
+    password2 = forms.CharField(
+            label='Password confirmation',
+            widget=forms.PasswordInput
+            )
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'first_name', 'last_name', 'zip_code', 'year_of_birth', 'gender', 'profile_pic')
+        fields = (
+                'email',
+                'username',
+                'first_name',
+                'last_name',
+                'zip_code',
+                'year_of_birth',
+                'gender',
+                'profile_pic'
+                )
 
     def clean_password2(self):
         # Check that the two password entries match
@@ -36,6 +43,7 @@ class UserCreationForm(forms.ModelForm):
             user.save()
         return user
 
+
 class UserChangeForm(forms.ModelForm):
     """A form for updating users. Includes all the fields on
     the user, but replaces the password field with admin's
@@ -46,18 +54,18 @@ class UserChangeForm(forms.ModelForm):
     class Meta:
         model = User
         fields = (
-                'email', 
-                'username', 
-                'first_name', 
-                'last_name', 
-                'zip_code', 
-                'year_of_birth', 
-                'gender', 
+                'email',
+                'username',
+                'first_name',
+                'last_name',
+                'zip_code',
+                'year_of_birth',
+                'gender',
                 'reputation',
                 'profile_pic',
-                'is_active', 
+                'is_active',
                 'is_staff',
-                'is_admin', 
+                'is_admin',
             )
 
     def clean_password(self):
@@ -76,31 +84,31 @@ class UserAdmin(BaseUserAdmin):
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
     list_display = (
-            'email', 
-            'username', 
-            'first_name', 
-            'last_name', 
-            'reputation', 
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'reputation',
             'is_active',
-            'is_staff', 
+            'is_staff',
             'is_admin',
         )
-    list_filter = ('is_admin','is_staff')
+    list_filter = ('is_admin', 'is_staff')
     fieldsets = (
         (
-            None, 
+            None,
             {
-                'fields': 
+                'fields':
                 (
-                    'email', 
-                    'password', 
+                    'email',
+                    'password',
                     'username',
                     'reputation',
                 )
             }
         ),
         (
-            'Personal info', 
+            'Personal info',
             {
                 'fields': (
                     'username',
@@ -114,9 +122,9 @@ class UserAdmin(BaseUserAdmin):
             }
         ),
         (
-            'Permissions', 
+            'Permissions',
             {
-                'fields': 
+                'fields':
                 (
                     'is_admin',
                     'is_staff',
@@ -132,11 +140,12 @@ class UserAdmin(BaseUserAdmin):
         (None, {
             'classes': ('wide',),
             'fields': ('email', 'username', 'password1', 'password2')}
-        ),
+         ),
     )
     search_fields = ('email', 'username')
     ordering = ('email',)
     filter_horizontal = ()
+
 
 # Now register the new UserAdmin...
 admin.site.register(User, UserAdmin)

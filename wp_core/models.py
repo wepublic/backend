@@ -1,6 +1,6 @@
 from django.db import models
 from users.models import User
-# Create your models here.
+
 
 class Tag(models.Model):
     text = models.CharField(max_length=64)
@@ -14,7 +14,11 @@ class Question(models.Model):
     tags = models.ManyToManyField(Tag, related_name="questions")
     time_created = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
-    votes = models.ManyToManyField(User, through="VoteQuestion", related_name='votes')
+    votes = models.ManyToManyField(
+            User,
+            through="VoteQuestion",
+            related_name='votes'
+        )
     user = models.ForeignKey(User)
 
     class Meta:
@@ -22,7 +26,6 @@ class Question(models.Model):
 
     def __str__(self):
         return "%s: \"%s\", %s " % (self.pk, self.text, self.user.email)
-
 
 
 class VoteQuestion(models.Model):
@@ -38,12 +41,21 @@ class Answer(models.Model):
     text = models.TextField(max_length=5000)
     time_created = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
+    question = models.ForeignKey(
+            Question,
+            on_delete=models.CASCADE,
+            related_name='answers'
+        )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    votes = models.ManyToManyField(User, through="VoteAnswer", related_name='votes_answer')
+    votes = models.ManyToManyField(
+            User,
+            through="VoteAnswer",
+            related_name='votes_answer'
+        )
 
     def __str__(self):
         return "%s: %s -> %s" % (self.pk, self.text, self.question.pk)
+
 
 class VoteAnswer(models.Model):
     class Meta:
