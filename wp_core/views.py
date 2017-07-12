@@ -97,6 +97,15 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                 votequestion__user=request.user
                 ).filter(answers=None)
         questions_length = questions.count()
+        if questions_length == 0:
+            return Response({"detail": "No Questions Left"}, status=429)
+        if questions_length == 1:
+            return Response(
+                    self.get_serializer(
+                        questions[0]
+                        ).data
+                    )
+
         return Response(
                 self.get_serializer(
                     questions[randint(0, questions_length-1)]
