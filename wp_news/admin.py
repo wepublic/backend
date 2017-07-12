@@ -4,9 +4,11 @@ from wp_news.models import NewsEntry
 from django.db import models
 from pagedown.widgets import AdminPagedownWidget
 
+
 class NewsEntryAdmin(admin.ModelAdmin):
     formfield_overrides = {
-        models.TextField: {'widget': AdminPagedownWidget },
+        models.TextField: {'widget': AdminPagedownWidget},
     }
+
 
 admin.site.register(NewsEntry, NewsEntryAdmin)
