@@ -21,6 +21,7 @@ from wp_core.models import (
 from wp_core.serializers import (
         QuestionSerializer,
         TagSerializer,
+        AnswerSerializer,
     )
 from wp_core.permissions import OnlyStaffCanModify, StaffOrOwnerCanModify
 from wp_core.pagination import NewestQuestionsSetPagination
@@ -78,6 +79,22 @@ class QuestionsViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(questions, many=True)
         return Response(serializer.data)
 
+    @detail_route(methods=['get'], permission_classes=[IsAuthenticated])
+    def answers(self, request, pk=None):
+        try:
+            question = self.get_queryset().get(pk=pk)
+        except Question.DoesNotExist:
+            raise NotFound(
+                    detail='Question with the id %s does not exist' % pk
+                )
+        return Response(
+                AnswerSerializer(
+                    question.answers.all(),
+                    many=True,
+                    context={'request': request}
+                ).data
+            )
+
     @detail_route(methods=['get'])
     def tags(self, request, pk=None):
 
@@ -104,7 +121,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                     self.get_serializer(
                         questions[0]
                         ).data
-                    )
+                   )
 
         return Response(
                 self.get_serializer(
