@@ -40,10 +40,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'pagedown',
+    'rest_framework_swagger',
     'wp_core',
     'users',
     'wp_news',
-    'pagedown',
+    'wp_newsletter',
 ]
 
 MIDDLEWARE = [
