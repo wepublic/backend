@@ -37,7 +37,14 @@ class TagViewSet(viewsets.ModelViewSet):
             pagination_class=NewestQuestionsSetPagination
             )
     def Questions(self, request, pk=None):
-        questions = get_object_or_404(Tag, pk=pk).questions
+        questions = Question.objects.filter(tags__pk=pk).annotate(
+                upvotes=Sum(
+                        Case(
+                            When(votequestion__up=True, then=1),
+                            output_field=IntegerField()
+                        )
+                    )
+            )
         ser = QuestionSerializer(
                 questions,
                 many=True,

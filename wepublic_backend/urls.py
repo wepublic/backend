@@ -22,6 +22,7 @@ from wp_core.views import TagViewSet, QuestionsViewSet
 from wp_core.views_answers import AnswerViewSet
 from users.views import UserViewSet
 from wp_news.views import NewsEntryViewSet
+from wp_newsletter.views import NewsLetterAddressViewSet
 
 router = DefaultRouter()
 router.register(r'Tags', TagViewSet)
@@ -29,6 +30,7 @@ router.register(r'Questions', QuestionsViewSet)
 router.register(r'Answers', AnswerViewSet)
 router.register(r'Users', UserViewSet)
 router.register(r'News', NewsEntryViewSet)
+router.register(r'Newsletter', NewsLetterAddressViewSet)
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
 ]
