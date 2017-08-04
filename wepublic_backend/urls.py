@@ -13,7 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.contrib import admin
 from rest_framework.routers import DefaultRouter
 
@@ -33,8 +33,8 @@ router.register(r'News', NewsEntryViewSet)
 router.register(r'Newsletter', NewsLetterAddressViewSet)
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^v1/', include(router.urls)),
 ]
-urlpatterns += router.urls
 
 
 if settings.DEBUG:
