@@ -15,7 +15,6 @@ from random import randint
 from wp_core.models import (
         Question,
         Tag,
-        VoteQuestion,
     )
 from wp_core.serializers import (
         QuestionSerializer,
@@ -71,7 +70,9 @@ class QuestionsViewSet(viewsets.ModelViewSet):
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        question = serializer.save()
+        # self.perform_create(serializer)
+        question.vote_by(request.user, True) 
         headers = self.get_success_headers(serializer.data)
         return Response(
                 serializer.data,
@@ -143,26 +144,10 @@ class QuestionsViewSet(viewsets.ModelViewSet):
             raise NotFound(
                     detail='Question with the id %s does not exist' % pk
                 )
-        user = request.user
-        if VoteQuestion.objects.filter(
-                question=question, user=user, up=False
-        ).exists():
-            VoteQuestion.objects.get(
-                    question=question,
-                    user=user,
-                    up=False
-                ).delete()
-        if VoteQuestion.objects.filter(
-                question=question, user=user, up=True
-        ).exists():
-            vote = VoteQuestion.objects.get(
-                    question=question,
-                    user=user,
-                    up=True
-                )
-        else:
-            vote = VoteQuestion(question=question, user=user, up=True)
-            vote.save()
+
+        question.vote_by(request.user, True)
+
+        # get the question again, so the upvote count updates
         question = self.get_queryset().get(pk=pk)
         return Response(self.get_serializer(question).data)
 
@@ -195,26 +180,8 @@ class QuestionsViewSet(viewsets.ModelViewSet):
             question = self.get_queryset().get(pk=pk)
         except Question.DoesNotExist:
             raise NotFound(detail='Question id %s does not exist' % pk)
-        user = request.user
-        try:
-            VoteQuestion.objects.get(
-                    question=question,
-                    user=user,
-                    up=True
-                ).delete()
-        except VoteQuestion.DoesNotExist:
-            pass
-        try:
-            vote = VoteQuestion.objects.get(
-                    question=question,
-                    user=user,
-                    up=False
-                )
-        except VoteQuestion.DoesNotExist:
-            vote = None
-        if vote is None:
-            vote = VoteQuestion(question=question, user=user, up=False)
-            vote.save()
+
+        question.vote_by(request.user, False)
 
         question = self.get_queryset().get(pk=pk)
         return Response(

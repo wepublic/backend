@@ -27,6 +27,17 @@ class Question(models.Model):
     def __str__(self):
         return "%s: \"%s\", %s " % (self.pk, self.text, self.user.email)
 
+    def vote_by(self, user, up):
+        try:
+            vote = VoteQuestion.objects.get(question=self, user=user)
+        except VoteQuestion.DoesNotExist:
+            vq = VoteQuestion(question=self, user=user, up=up)
+            vq.save()
+            return
+        if vote.up != up:
+            vote.up = up
+            vote.save()
+
 
 class VoteQuestion(models.Model):
     class Meta:
