@@ -3,6 +3,7 @@ from wp_core.models import (
         Question,
         Answer,
         Tag,
+        VoteAnswer,
     )
 from users.models import User
 from users.serializers import UserLinkSerializer
@@ -83,10 +84,12 @@ class AnswerSerializer(serializers.ModelSerializer):
 
     def get_voted(self, obj):
         if ('request' in self.context and
-                self.context['request'].user is not None):
-            return self.context['request'].user in obj.votes.all()
+                self.context['request'].user is not None and
+                self.context['request'].user in obj.votes.all()):
+            return VoteAnswer.objects.get(answer=obj,
+                                          user=self.context['request'].user).up
         else:
-            return False
+            return None
 
 
 class AnswerPostSerializer(serializers.ModelSerializer):
