@@ -20,6 +20,7 @@ class NewsEntrySerializer(serializers.ModelSerializer):
         model = NewsEntry
         fields = (
                 'id',
+                'title',
                 'content',
                 'time_created',
                 'last_modified',
