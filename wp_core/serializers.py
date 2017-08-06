@@ -66,6 +66,11 @@ class QuestionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Question already exists')
         return value
 
+    def validate_tags(self, value):
+        if len(value) > 3:
+            raise serializers.ValidationError('Only 3 Tags are allowed')
+        return value
+
 
 class QuestionLinkSerializer(serializers.HyperlinkedModelSerializer):
 
