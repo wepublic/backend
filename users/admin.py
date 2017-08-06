@@ -1,5 +1,5 @@
 from django.contrib import admin
-from users.models import User
+from users.models import User, ReputationAction
 from django import forms
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
@@ -149,5 +149,6 @@ class UserAdmin(BaseUserAdmin):
 
 # Now register the new UserAdmin...
 admin.site.register(User, UserAdmin)
+admin.site.register(ReputationAction)
 # ... and, since we're not using Django's built-in permissions,
 # unregister the Group model from admin.
