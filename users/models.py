@@ -42,6 +42,14 @@ class CustomUserManager(BaseUserManager):
         return user
 
 
+class ReputationAction(models.Model):
+    action = models.CharField(max_length=50, unique=True)
+    value = models.IntegerField()
+
+    def __str__(self):
+        return "{}: {}".format(self.action, self.value)
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     """
     Our own extension of djangos standard :model:`auth.User` class
@@ -103,3 +111,15 @@ class User(AbstractBaseUser, PermissionsMixin):
             Token.objects.get(user=self).delete()
         except Token.DoesNotExist:
             pass
+
+    def update_reputation(self, action):
+        value = ReputationAction.objects.get(action=action).value
+        print(self.reputation)
+        if value + self.reputation < 0:
+            return False
+        else:
+            self.reputation += value
+            self.save()
+            return True
+        
+

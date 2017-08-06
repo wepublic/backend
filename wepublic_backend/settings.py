@@ -161,4 +161,17 @@ STATICFILES_DIRS = (
 db_from_env = dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(db_from_env)
 
+WP_DEFAULT_REPUTATION = [
+    {
+        "action": "CREATE_QUESTION",
+        "value": -10,
+    },
+    {
+        "action": "VOTE_QUESTION",
+        "value": 1,
+    },
+]
+WP_REPUTATION_VOTE = 1
+WP_REPUTATION_QUESTION = -10
+
 from wepublic_backend.settings_local import *

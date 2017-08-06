@@ -28,12 +28,14 @@ class Question(models.Model):
     def __str__(self):
         return "%s: \"%s\", %s " % (self.pk, self.text, self.user.email)
 
-    def vote_by(self, user, up):
+    def vote_by(self, user, up, update_rep=True):
         try:
             vote = VoteQuestion.objects.get(question=self, user=user)
         except VoteQuestion.DoesNotExist:
             vq = VoteQuestion(question=self, user=user, up=up)
             vq.save()
+            if update_rep:
+                user.update_reputation('VOTE_QUESTION')
             return
         if vote.up != up:
             vote.up = up
