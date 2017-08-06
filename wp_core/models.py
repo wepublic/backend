@@ -1,5 +1,6 @@
 from django.db import models
 from users.models import User
+from wp_party.models import Party
 
 
 class Tag(models.Model):
@@ -58,6 +59,7 @@ class Answer(models.Model):
             related_name='answers'
         )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    party = models.ForeignKey(Party, on_delete=models.CASCADE, null=True)
     votes = models.ManyToManyField(
             User,
             through="VoteAnswer",

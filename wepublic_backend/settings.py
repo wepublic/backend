@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'users',
     'wp_news',
     'wp_newsletter',
+    'wp_party',
 ]
 
 MIDDLEWARE = [

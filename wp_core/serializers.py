@@ -6,6 +6,8 @@ from wp_core.models import (
         VoteAnswer,
     )
 from users.models import User
+from wp_party.models import Party
+from wp_party.serializers import PartySerialzier
 from users.serializers import UserLinkSerializer
 
 
@@ -75,6 +77,7 @@ class QuestionLinkSerializer(serializers.HyperlinkedModelSerializer):
 class AnswerSerializer(serializers.ModelSerializer):
     user = UserLinkSerializer()
     question = QuestionLinkSerializer(read_only=True)
+    party = PartySerialzier(read_only=True)
     upvotes = serializers.IntegerField(read_only=True)
     voted = serializers.SerializerMethodField(read_only=True)
 
@@ -96,6 +99,9 @@ class AnswerPostSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     question = serializers.PrimaryKeyRelatedField(
             queryset=Question.objects.all()
+        )
+    party = serializers.PrimaryKeyRelatedField(
+            queryset=Party.objects.all()
         )
     upvotes = serializers.IntegerField(read_only=True)
     voted = serializers.SerializerMethodField(read_only=True)
