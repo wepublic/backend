@@ -21,7 +21,6 @@ class NewsEntrySerializer(serializers.ModelSerializer):
         fields = (
                 'id',
                 'content',
-                'html_content',
                 'time_created',
                 'last_modified',
                 'user',
@@ -30,5 +29,4 @@ class NewsEntrySerializer(serializers.ModelSerializer):
                 'id',
                 'time_created',
                 'last_modified',
-                'html_content',
                 )
