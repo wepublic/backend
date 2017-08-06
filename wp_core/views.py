@@ -7,7 +7,7 @@ from rest_framework.permissions import (
     )
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, PermissionDenied
 
 from django.db.models import Sum, When, Case, IntegerField
 
@@ -70,9 +70,13 @@ class QuestionsViewSet(viewsets.ModelViewSet):
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        if not request.user.update_reputation('CREATE_QUESTION'):
+            raise PermissionDenied(detail='Not Enough Reputation')
+
         question = serializer.save()
         # self.perform_create(serializer)
-        question.vote_by(request.user, True) 
+        question.vote_by(request.user, True, update_rep=False) 
         headers = self.get_success_headers(serializer.data)
         return Response(
                 serializer.data,
@@ -180,9 +184,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
             question = self.get_queryset().get(pk=pk)
         except Question.DoesNotExist:
             raise NotFound(detail='Question id %s does not exist' % pk)
-
         question.vote_by(request.user, False)
-
         question = self.get_queryset().get(pk=pk)
         return Response(
                 self.get_serializer(question).data,
