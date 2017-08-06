@@ -23,6 +23,7 @@ from wp_core.views_answers import AnswerViewSet
 from users.views import UserViewSet
 from wp_news.views import NewsEntryViewSet
 from wp_newsletter.views import NewsLetterAddressViewSet
+from wp_party.views import PartyViewSet
 
 router = DefaultRouter()
 router.register(r'Tags', TagViewSet)
@@ -31,6 +32,7 @@ router.register(r'Answers', AnswerViewSet)
 router.register(r'Users', UserViewSet)
 router.register(r'News', NewsEntryViewSet)
 router.register(r'Newsletter', NewsLetterAddressViewSet)
+router.register(r'Parties', PartyViewSet)
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^v1/', include(router.urls)),
