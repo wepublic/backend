@@ -17,6 +17,7 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from rest_framework.routers import DefaultRouter
 
+from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from wp_core.views import TagViewSet, QuestionsViewSet
 from wp_core.views_answers import AnswerViewSet
@@ -24,6 +25,9 @@ from users.views import UserViewSet
 from wp_news.views import NewsEntryViewSet
 from wp_newsletter.views import NewsLetterAddressViewSet
 from wp_party.views import PartyViewSet
+
+from rest_framework_swagger.views import get_swagger_view
+
 
 router = DefaultRouter()
 router.register(r'Tags', TagViewSet)
@@ -36,6 +40,7 @@ router.register(r'Parties', PartyViewSet)
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^v1/', include(router.urls)),
+    url(r'^docs/', csrf_exempt(get_swagger_view(title='Wepublic API'))),
 ]
 
 

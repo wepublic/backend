@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'flat_responsive',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -171,7 +172,15 @@ WP_DEFAULT_REPUTATION = [
         "value": 1,
     },
 ]
-WP_REPUTATION_VOTE = 1
-WP_REPUTATION_QUESTION = -10
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'api_key': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+    },
+}
 
 from wepublic_backend.settings_local import *

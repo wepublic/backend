@@ -11,6 +11,8 @@ from users.permissions import UserViewPermission
 from users.models import User
 from users.serializers import UserSerializer
 from users import utils
+from users.misc_serializers import ChangePasswordSerializer
+from users.misc_serializers import GetTokenSerializer
 from rest_framework import exceptions
 from django.core.exceptions import ValidationError
 import django.contrib.auth.password_validation as validators
@@ -32,7 +34,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [UserViewPermission]
 
-    @list_route(methods=['post'])
+    @list_route(methods=['post'], serializer_class=ChangePasswordSerializer)
     def change_password(self, request):
         if 'email' not in request.data:
             raise exceptions.ParseError('\'email\' missing')
@@ -61,7 +63,7 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             raise exceptions.AuthenticationFailed
 
-    @list_route(methods=['post'])
+    @list_route(methods=['post'], serializer_class=GetTokenSerializer)
     def token(self, request):
         """
         Acquire an API token by posting your credentials
