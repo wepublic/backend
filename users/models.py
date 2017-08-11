@@ -9,7 +9,7 @@ from rest_framework.authtoken.models import Token
 
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, email, username, first_name="", last_name="",
+    def create_user(self, email, username="", first_name="", last_name="",
                     zip_code="", year_of_birth=None, gender="",
                     password=None, profile_pic=""):
         if not email:
@@ -69,6 +69,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         max_length=150,
         help_text='150 characters. Letters, digits and @/./+/-/_ only.',
         validators=[username_validator],
+        blank=True,
     )
 
     first_name = models.CharField(blank=True, max_length=50)
