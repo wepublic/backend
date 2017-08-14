@@ -76,7 +76,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
 
         question = serializer.save()
         # self.perform_create(serializer)
-        question.vote_by(request.user, True, update_rep=False) 
+        question.vote_by(request.user, True, update_rep=False)
         headers = self.get_success_headers(serializer.data)
         return Response(
                 serializer.data,
@@ -87,6 +87,12 @@ class QuestionsViewSet(viewsets.ModelViewSet):
     @list_route(methods=['get'], permission_classes=[IsAuthenticated])
     def my(self, request):
         questions = self.get_queryset().filter(user=request.user)
+        answered = request.GET.get('answered')
+        if answered is not None:
+            if answered == 'true':
+                questions = questions.exclude(answers=None)
+            if answered == 'false':
+                questions = questions.filter(answers=None)
         serializer = self.get_serializer(questions, many=True)
         return Response(serializer.data)
 
@@ -167,6 +173,14 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                 questions,
                 self
             )
+        answered = request.GET.get('answered')
+
+        if answered is not None:
+            if answered == 'true':
+                questions = questions.exclude(answers=None)
+            if answered == 'false':
+                questions = questions.filter(answers=None)
+
         return Response(self.get_serializer(questions, many=True).data)
 
     @list_route(methods=['get'], permission_classes=[IsAuthenticated])
