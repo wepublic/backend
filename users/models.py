@@ -1,4 +1,8 @@
 from django.db import models
+from django.utils import timezone
+import datetime
+# from django.urls import reverse
+from rest_framework.reverse import reverse_lazy
 from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin,
@@ -6,6 +10,8 @@ from django.contrib.auth.models import (
 )
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework.authtoken.models import Token
+from users.utils import generate_activation_key
+from users.utils import send_activation_mail
 
 
 class CustomUserManager(BaseUserManager):
@@ -82,6 +88,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
+    activation_key = models.CharField(max_length=80, blank=True)
+    activation_key_exprires = models.DateTimeField(null=True, blank=True)
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
@@ -113,6 +121,30 @@ class User(AbstractBaseUser, PermissionsMixin):
         except Token.DoesNotExist:
             pass
 
+    def new_activation_link(self):
+        exp = timezone.now() + datetime.timedelta(days=1)
+
+        self.activation_key = generate_activation_key(self.email)
+        self.activation_key_exprires = exp
+        self.save()
+
+    def send_validation_link(self, request):
+
+        if self.activation_key is None or self.activation_key == '':
+            self.new_activation_link()
+        if (self.activation_key_exprires is not None
+                and timezone.now() > self.activation_key_exprires):
+            self.new_activation_link()
+
+        path = reverse_lazy('users-activate', args=[self.pk], request=request)
+        link = "{}?key={}".format(path, self.activation_key)
+        if self.username is not '':
+            name = self.username
+        else:
+            name = self.email
+
+        send_activation_mail(name, link, self.email)
+
     def update_reputation(self, action):
         value = ReputationAction.objects.get(action=action).value
         print(self.reputation)
@@ -122,5 +154,3 @@ class User(AbstractBaseUser, PermissionsMixin):
             self.reputation += value
             self.save()
             return True
-        
-

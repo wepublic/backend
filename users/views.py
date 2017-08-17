@@ -7,6 +7,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from rest_framework.decorators import list_route
+from rest_framework.decorators import detail_route
 from users.permissions import UserViewPermission
 from users.models import User
 from users.serializers import UserSerializer
@@ -14,6 +15,8 @@ from users import utils
 from rest_framework import exceptions
 from django.core.exceptions import ValidationError
 import django.contrib.auth.password_validation as validators
+from django.utils import timezone
+from rest_framework.renderers import TemplateHTMLRenderer
 # Create your views here.
 
 
@@ -112,8 +115,9 @@ class UserViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
 
         user = serializer.instance
-        user.is_active = True
+        user.is_active = False
         user.save()
+        user.send_validation_link(request)
         token, created = Token.objects.get_or_create(user=user)
         data = serializer.data
         data["token"] = token.key
@@ -137,6 +141,32 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.get_object()
         user.delete()
         return Response({'status': 'ok'})
+
+    @detail_route(methods=['GET'])
+    def resend_validation(self, request, pk=None):
+        user = self.get_object()
+        user.send_validation_link(request)
+
+        return Response("okay")
+
+    @detail_route(methods=['GET'], renderer_classes=(TemplateHTMLRenderer, ))
+    def activate(self, request, pk=None):
+        activation_key = request.GET.get('key', '')
+
+        if activation_key == '':
+            raise exceptions.AuthenticationFailed('No activation key')
+        user = self.get_object()
+        if user.activation_key != activation_key:
+            raise exceptions.AuthenticationFailed('key invalid')
+        if timezone.now() > user.activation_key_exprires:
+            raise exceptions.AuthenticationFailed('key expired')
+        if user.is_active:
+            return Response(template_name='users/activation_again.html')
+
+        user.is_active = True
+        user.save()
+
+        return Response(template_name='users/activation_success.html')
 
 
 class LogOutAPIView(APIView):

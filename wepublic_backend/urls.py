@@ -26,13 +26,13 @@ from wp_newsletter.views import NewsLetterAddressViewSet
 from wp_party.views import PartyViewSet
 
 router = DefaultRouter()
-router.register(r'Tags', TagViewSet)
-router.register(r'Questions', QuestionsViewSet)
-router.register(r'Answers', AnswerViewSet)
-router.register(r'Users', UserViewSet)
-router.register(r'News', NewsEntryViewSet)
-router.register(r'Newsletter', NewsLetterAddressViewSet)
-router.register(r'Parties', PartyViewSet)
+router.register(r'Tags', TagViewSet, 'tags')
+router.register(r'Questions', QuestionsViewSet, 'questions')
+router.register(r'Answers', AnswerViewSet, 'answers')
+router.register(r'Users', UserViewSet, 'users')
+router.register(r'News', NewsEntryViewSet, 'news')
+router.register(r'Newsletter', NewsLetterAddressViewSet, 'newsletter')
+router.register(r'Parties', PartyViewSet, 'parties')
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^v1/', include(router.urls)),
