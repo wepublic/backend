@@ -26,10 +26,10 @@ from wp_newsletter.views import NewsLetterAddressViewSet
 from wp_party.views import PartyViewSet
 
 router = DefaultRouter()
-router.register(r'Tags', TagViewSet, 'tags')
-router.register(r'Questions', QuestionsViewSet, 'questions')
-router.register(r'Answers', AnswerViewSet, 'answers')
-router.register(r'Users', UserViewSet, 'users')
+router.register(r'Tags', TagViewSet, 'tag')
+router.register(r'Questions', QuestionsViewSet, 'question')
+router.register(r'Answers', AnswerViewSet, 'answer')
+router.register(r'Users', UserViewSet, 'user')
 router.register(r'News', NewsEntryViewSet, 'news')
 router.register(r'Newsletter', NewsLetterAddressViewSet, 'newsletter')
 router.register(r'Parties', PartyViewSet, 'parties')
