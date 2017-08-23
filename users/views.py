@@ -11,12 +11,15 @@ from rest_framework.decorators import detail_route
 from users.permissions import UserViewPermission
 from users.models import User
 from users.serializers import UserSerializer
+from users.serializers import ResetPasswordRequestSerializer
 from users import utils
 from rest_framework import exceptions
 from django.core.exceptions import ValidationError
 import django.contrib.auth.password_validation as validators
 from django.utils import timezone
 from rest_framework.renderers import TemplateHTMLRenderer
+from users.forms import PasswordResetForm
+from django.shortcuts import render
 # Create your views here.
 
 
@@ -69,6 +72,7 @@ class UserViewSet(viewsets.ModelViewSet):
         """
         Acquire an API token by posting your credentials
         """
+        print(request.data)
         if 'email' not in request.data or 'password' not in request.data:
             raise exceptions.ParseError(
                     detail="email and/or password field missing")
@@ -82,6 +86,11 @@ class UserViewSet(viewsets.ModelViewSet):
             response = {'Token': token.key}
             return Response(response)
         else:
+            try:
+                user = User.objects.get(email=request.data['email'])
+            except User.DoesNotExist:
+                if not User.is_active:
+                    raise exceptions.AuthenticationFailed('user not active')
             raise exceptions.AuthenticationFailed
 
     @list_route(methods=['get'],
@@ -167,6 +176,54 @@ class UserViewSet(viewsets.ModelViewSet):
         user.save()
 
         return Response(template_name='users/activation_success.html')
+
+    @list_route(methods=['POST'])
+    def reset_password(self, request):
+        serializer = ResetPasswordRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email_address = serializer.data.get('email')
+        user = User.objects.get(email=email_address)
+        print(user)
+        user.password_reset_link(request)
+        return Response({'success': True})
+
+    @list_route(
+            methods=['GET', 'POST'],
+            renderer_classes=(TemplateHTMLRenderer, )
+            )
+    def reset_password_page(self, request):
+        print('reset_password_page')
+        if request.method == 'POST':
+            form = PasswordResetForm(request.POST)
+            print(form)
+            # check whether it's valid:
+            if form.is_valid():
+                password = form.data.get("new_password")
+                key = form.data.get("key")
+                user = User.objects.get(reset_password_key=key)
+                user.set_password(password)
+                user.reset_password_key = ""
+                user.save()
+                user.remove_token()
+
+                # process the data in form.cleaned_data as required
+                # ...
+                # redirect to a new URL:
+                return render(request, 'users/password_reset_success.html')
+
+        # if a GET (or any other method) we'll create a blank form
+        else:
+            key = request.GET.get('key')
+            form = PasswordResetForm(initial={
+                    'key': key,
+                })
+
+        # return Response({'form': form}, 'users/password_reset_page.html')
+        return render(
+                request,
+                'users/password_reset_page.html',
+                {'form': form}
+                )
 
 
 class LogOutAPIView(APIView):

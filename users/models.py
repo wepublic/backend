@@ -10,8 +10,9 @@ from django.contrib.auth.models import (
 )
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework.authtoken.models import Token
-from users.utils import generate_activation_key
+from users.utils import generate_random_key
 from users.utils import send_activation_mail
+from users.utils import send_password_reset_mail
 
 
 class CustomUserManager(BaseUserManager):
@@ -90,6 +91,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=False)
     activation_key = models.CharField(max_length=80, blank=True)
     activation_key_exprires = models.DateTimeField(null=True, blank=True)
+    reset_password_key = models.CharField(max_length=80, blank=True)
+    reset_password_key_expires = models.DateTimeField(null=True, blank=True)
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
@@ -119,13 +122,21 @@ class User(AbstractBaseUser, PermissionsMixin):
         try:
             Token.objects.get(user=self).delete()
         except Token.DoesNotExist:
+            print('token does not exists')
             pass
 
     def new_activation_link(self):
         exp = timezone.now() + datetime.timedelta(days=1)
 
-        self.activation_key = generate_activation_key(self.email)
+        self.activation_key = generate_random_key(self.email)
         self.activation_key_exprires = exp
+        self.save()
+
+    def new_password_reset_link(self):
+        exp = timezone.now() + datetime.timedelta(days=1)
+
+        self.reset_password_key = generate_random_key(self.email)
+        self.reset_password_key_expires = exp
         self.save()
 
     def send_validation_link(self, request):
@@ -142,8 +153,25 @@ class User(AbstractBaseUser, PermissionsMixin):
             name = self.username
         else:
             name = self.email
-
         send_activation_mail(name, link, self.email)
+
+    def password_reset_link(self, request):
+
+        if self.reset_password_key is None or self.reset_password_key == '':
+            self.new_password_reset_link()
+        if (self.reset_password_key_expires is not None
+                and timezone.now() > self.reset_password_key_expires):
+            self.new_password_reset_link()
+
+        path = reverse_lazy('user-reset-password-page',
+                            request=request
+                            )
+        link = "{}?key={}".format(path, self.reset_password_key)
+        if self.username is not '':
+            name = self.username
+        else:
+            name = self.email
+        send_password_reset_mail(name, link, self.email)
 
     def update_reputation(self, action):
         value = ReputationAction.objects.get(action=action).value
