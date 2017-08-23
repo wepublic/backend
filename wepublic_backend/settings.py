@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
     'pagedown',
     'rest_framework_swagger',
     'wp_core',
@@ -52,14 +53,19 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+# 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
 ROOT_URLCONF = 'wepublic_backend.urls'
+
+CORS_ORIGIN_WHITELIST = [
+        'localhost:8100',
+    ]
 
 TEMPLATES = [
     {

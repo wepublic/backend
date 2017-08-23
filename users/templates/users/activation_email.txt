@@ -1,0 +1,3 @@
+Hi {{ username }},
+Wilkommen bei +ME!
+Um deinen Account zu aktivieren, klicke bitte auf folgenden link: {{ link }}

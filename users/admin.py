@@ -66,6 +66,8 @@ class UserChangeForm(forms.ModelForm):
                 'is_active',
                 'is_staff',
                 'is_admin',
+                'activation_key',
+                'activation_key_exprires'
             )
 
     def clean_password(self):
@@ -130,6 +132,8 @@ class UserAdmin(BaseUserAdmin):
                     'is_staff',
                     'is_active',
                     'groups',
+                    'activation_key_exprires',
+                    'activation_key',
                 )
             }
         ),
