@@ -3,6 +3,8 @@ import hashlib
 
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.conf import settings
+import requests
 
 
 def is_staff_user(user):
@@ -43,3 +45,31 @@ def send_password_reset_mail(username, password_reset_link, recipient):
             [recipient],
             html_message=html
     )
+
+
+def slack_notify_report(question, reason, link, reporter):
+    if not settings.SLACK_NOTIFICATIONS_ACTIVE:
+        return
+    json = {
+            "text": "Eine Frage wurde von {} gemeldet:".format(
+                reporter.email),
+            "attachments": [
+                {
+                    "fallback": "\"{}\": <{}|Link>".format(
+                        question,
+                        link),
+                    "pretext": "\"{}\": <{}|Link>".format(
+                        question,
+                        link),
+                    "color": "#D00000",
+                    "fields": [
+                        {
+                            "title": "Begründung",
+                            "value": reason,
+                            "short": False
+                        }
+                    ]
+                }
+            ]
+        }
+    requests.post(settings.SLACK_NOTIFICATIONS_URL, json=json)
