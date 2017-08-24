@@ -5,11 +5,13 @@ from rest_framework.permissions import (
         IsAuthenticatedOrReadOnly,
         IsAuthenticated,
     )
+from rest_framework.reverse import reverse_lazy
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, PermissionDenied
 
 from django.db.models import Sum, When, Case, IntegerField
+from users.utils import slack_notify_report
 
 from random import randint
 from wp_core.models import (
@@ -23,6 +25,10 @@ from wp_core.serializers import (
     )
 from wp_core.permissions import OnlyStaffCanModify, StaffOrOwnerCanModify
 from wp_core.pagination import NewestQuestionsSetPagination
+
+from django.template.loader import render_to_string
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -204,3 +210,32 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                 self.get_serializer(question).data,
                 status=status.HTTP_201_CREATED
             )
+
+    @detail_route(methods=['post'], permission_classes=[IsAuthenticated])
+    def report(self, request, pk=None):
+        emails = settings.REPORT_MAILS
+        url = reverse_lazy(
+                'admin:wp_core_question_change',
+                args=([pk]),
+                request=request
+                )
+        question = self.get_object()
+        reason = request.data.get('reason', 'nichts angegeben')
+        params = {
+                'question': question.text,
+                'link': url,
+                'reason': reason,
+                }
+        plain = render_to_string(
+                'wp_core/mails/report_question_email.txt', params)
+        html = render_to_string(
+                'wp_core/mails/report_question_email.html', params)
+        send_mail(
+                'Eine Frage wurde gemeldet',
+                plain,
+                'admin@wepublic.me',
+                emails,
+                html_message=html
+        )
+        slack_notify_report(question.text, reason, url)
+        return Response({'success': True})

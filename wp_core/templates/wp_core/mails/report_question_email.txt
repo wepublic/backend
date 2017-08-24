@@ -1,0 +1,7 @@
+Jemand fand diese Frage kacke:
+{{ question }}
+Bitte klicke auf den folgenden Link, um die Frage zu löschen:
+{{ link }}
+
+Dein wepublic-email-roboter.
+			
