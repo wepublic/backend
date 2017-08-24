@@ -6,6 +6,10 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
 
+class ResetPasswordRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
 class UserSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     password = serializers.CharField(write_only=True)
