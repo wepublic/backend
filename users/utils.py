@@ -47,11 +47,12 @@ def send_password_reset_mail(username, password_reset_link, recipient):
     )
 
 
-def slack_notify_report(question, reason, link):
+def slack_notify_report(question, reason, link, reporter):
     if not settings.SLACK_NOTIFICATIONS_ACTIVE:
         return
     json = {
-            "text": "Eine Frage wurde gemeldet:",
+            "text": "Eine Frage wurde von {} gemeldet:".format(
+                reporter.email),
             "attachments": [
                 {
                     "fallback": "\"{}\": <{}|Link>".format(

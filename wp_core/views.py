@@ -213,6 +213,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
 
     @detail_route(methods=['post'], permission_classes=[IsAuthenticated])
     def report(self, request, pk=None):
+        user = request.user
         emails = settings.REPORT_MAILS
         url = reverse_lazy(
                 'admin:wp_core_question_change',
@@ -225,6 +226,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                 'question': question.text,
                 'link': url,
                 'reason': reason,
+                'reporter': user,
                 }
         plain = render_to_string(
                 'wp_core/mails/report_question_email.txt', params)
@@ -238,5 +240,5 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                     emails,
                     html_message=html
             )
-        slack_notify_report(question.text, reason, url)
+        slack_notify_report(question.text, reason, url, user)
         return Response({'success': True})
