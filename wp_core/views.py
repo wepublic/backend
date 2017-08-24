@@ -230,12 +230,13 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                 'wp_core/mails/report_question_email.txt', params)
         html = render_to_string(
                 'wp_core/mails/report_question_email.html', params)
-        send_mail(
-                'Eine Frage wurde gemeldet',
-                plain,
-                'admin@wepublic.me',
-                emails,
-                html_message=html
-        )
+        if settings.REPORT_MAILS_ACTIVE:
+            send_mail(
+                    'Eine Frage wurde gemeldet',
+                    plain,
+                    'admin@wepublic.me',
+                    emails,
+                    html_message=html
+            )
         slack_notify_report(question.text, reason, url)
         return Response({'success': True})
