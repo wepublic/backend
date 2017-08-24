@@ -158,13 +158,15 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response("okay")
 
-    @detail_route(methods=['GET'], renderer_classes=(TemplateHTMLRenderer, ))
+    @list_route(methods=['GET'],
+                renderer_classes=(TemplateHTMLRenderer, ),
+                authentication_classes=[])
     def activate(self, request, pk=None):
         activation_key = request.GET.get('key', '')
 
         if activation_key == '':
             raise exceptions.AuthenticationFailed('No activation key')
-        user = self.get_object()
+        user = User.objects.get(activation_key=activation_key)
         if user.activation_key != activation_key:
             raise exceptions.AuthenticationFailed('key invalid')
         if timezone.now() > user.activation_key_exprires:

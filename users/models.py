@@ -147,7 +147,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                 and timezone.now() > self.activation_key_exprires):
             self.new_activation_link()
 
-        path = reverse_lazy('user-activate', args=[self.pk], request=request)
+        path = reverse_lazy('user-activate', request=request)
         link = "{}?key={}".format(path, self.activation_key)
         if self.username is not '':
             name = self.username

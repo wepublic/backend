@@ -4,6 +4,7 @@ from wp_core.models import (
         Answer,
         Tag,
         VoteAnswer,
+        VoteQuestion,
     )
 from users.models import User
 from wp_party.models import Party
@@ -38,10 +39,14 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     def get_voted(self, obj):
         if ('request' in self.context and
-                self.context['request'].user is not None):
-            return self.context['request'].user in obj.votes.all()
+                self.context['request'].user is not None and
+                self.context['request'].user in obj.votes.all()):
+            return VoteQuestion.objects.get(
+                    question=obj,
+                    user=self.context['request'].user
+                    ).up
         else:
-            return False
+            return None
 
     def create(self, validated_data):
         user = self.context['request'].user
