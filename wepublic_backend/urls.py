@@ -35,6 +35,7 @@ router.register(r'Newsletter', NewsLetterAddressViewSet, 'newsletter')
 router.register(r'Parties', PartyViewSet, 'parties')
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^v1/Match/', include('wp_match.urls')),
     url(r'^v1/', include(router.urls)),
 ]
 
