@@ -32,4 +32,4 @@ def index(request):
         }
         response.append(d_party)
 
-    return JsonResponse([{'content': json.dumps(response)}], safe=False)
+    return JsonResponse(response, safe=False)
