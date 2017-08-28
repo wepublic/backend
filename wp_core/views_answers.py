@@ -23,6 +23,7 @@ class AnswerViewSet(viewsets.ModelViewSet):
                 upvotes=Sum(
                     Case(
                         When(voteanswer__up=True, then=1),
+                        When(voteanswer__up=False, then=0),
                         output_field=IntegerField()
                     )
                 )
