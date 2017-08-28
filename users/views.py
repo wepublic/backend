@@ -7,7 +7,6 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from rest_framework.decorators import list_route
-from rest_framework.decorators import detail_route
 from users.permissions import UserViewPermission
 from users.models import User
 from users.serializers import UserSerializer
@@ -151,9 +150,18 @@ class UserViewSet(viewsets.ModelViewSet):
         user.delete()
         return Response({'status': 'ok'})
 
-    @detail_route(methods=['GET'])
-    def resend_validation(self, request, pk=None):
-        user = self.get_object()
+    @list_route(methods=['POST'])
+    def resend_validation(self, request):
+        email = request.data.get('email')
+        if not email:
+            raise exceptions.ParseError("Email field missing")
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise exceptions.ParseError("Email not registered")
+        if user.is_active:
+            raise exceptions.ParseError("User Already active")
+
         user.send_validation_link(request)
 
         return Response("okay")
