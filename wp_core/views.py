@@ -63,6 +63,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                 upvotes=Sum(
                         Case(
                             When(votequestion__up=True, then=1),
+                            When(votequestion__up=False, then=0),
                             output_field=IntegerField()
                         )
                     )
