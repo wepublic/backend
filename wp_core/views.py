@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, PermissionDenied
 
 from django.db.models import Sum, When, Case, IntegerField
+from django.db.models.functions import Coalesce 
 from users.utils import slack_notify_report
 
 from random import randint
@@ -42,12 +43,13 @@ class TagViewSet(viewsets.ModelViewSet):
             )
     def Questions(self, request, pk=None):
         questions = Question.objects.filter(tags__pk=pk).annotate(
-                upvotes=Sum(
+                upvotes=Coalesce(Sum(
                         Case(
                             When(votequestion__up=True, then=1),
+                            When(votequestion__up=False, then=0),
                             output_field=IntegerField()
                         )
-                    )
+                    ),0)
             )
         ser = QuestionSerializer(
                 questions,
@@ -60,13 +62,13 @@ class TagViewSet(viewsets.ModelViewSet):
 class QuestionsViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly, StaffOrOwnerCanModify]
     queryset = Question.objects.annotate(
-                upvotes=Sum(
+                upvotes=Coalesce(Sum(
                         Case(
                             When(votequestion__up=True, then=1),
                             When(votequestion__up=False, then=0),
                             output_field=IntegerField()
                         )
-                    )
+                    ),0)
             )
     serializer_class = QuestionSerializer
     pagination_class = NewestQuestionsSetPagination
