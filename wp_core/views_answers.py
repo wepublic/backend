@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 
 from django.db.models import Sum, When, Case, IntegerField
+from django.db.models.functions import Coalesce
 
 from wp_core.models import Answer, VoteAnswer, Question
 from wp_core.serializers import AnswerSerializer, AnswerPostSerializer
@@ -26,7 +27,7 @@ class AnswerViewSet(viewsets.ModelViewSet):
                         When(voteanswer__up=False, then=0),
                         output_field=IntegerField()
                     )
-                ),0)
+                ), 0)
             )
     serializer_class = AnswerSerializer
 
