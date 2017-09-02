@@ -46,6 +46,32 @@ def send_password_reset_mail(username, password_reset_link, recipient):
             html_message=html
     )
 
+def slack_notify_question(question, link):
+    if not settings.SLACK_NOTIFICATIONS_ACTIVE:
+        return
+    json = {
+            "text": "Die Folgende Frage hat grade am meisten Upvotes: ",
+            "channel": "#produktentwicklung",
+            "attachments": [
+                {
+                    "fallback": "\"{}\": <{}|Link>".format(
+                        question,
+                        link),
+                    "pretext": "\"{}\": <{}|Link>".format(
+                        question,
+                        link),
+                    "color": "#D00000",
+                    "fields": [
+                        {
+                            "title": "Frage",
+                            "value": question.text,
+                            "short": False
+                        }
+                    ]
+                }
+            ]
+        }
+    requests.post(settings.SLACK_NOTIFICATIONS_URL, json=json)
 
 def slack_notify_report(question, reason, link, reporter):
     if not settings.SLACK_NOTIFICATIONS_ACTIVE:

@@ -1,6 +1,11 @@
 from django.db import models
 from users.models import User
 from wp_party.models import Party
+from django.utils import timezone
+from django.core import exceptions
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Tag(models.Model):
@@ -22,6 +27,9 @@ class Question(models.Model):
         )
     user = models.ForeignKey(User)
 
+    closed = models.BooleanField(default=False)
+    closed_date = models.DateTimeField(null=True)
+
     class Meta:
         get_latest_by = 'time_created'
 
@@ -29,6 +37,9 @@ class Question(models.Model):
         return "%s: \"%s\", %s " % (self.pk, self.text, self.user.email)
 
     def vote_by(self, user, up, update_rep=True):
+        if self.closed:
+            raise exceptions.PermissionDenied("Question Already Closed")
+
         try:
             vote = VoteQuestion.objects.get(question=self, user=user)
         except VoteQuestion.DoesNotExist:
@@ -40,6 +51,17 @@ class Question(models.Model):
         if vote.up != up:
             vote.up = up
             vote.save()
+
+    def close(self):
+        if self.closed:
+            logger.warning((
+                "Trying to close Question \"{}\","
+                "But it already was closed"
+                ).format(self))
+            return
+        self.closed = True
+        self.closed_date = timezone.now()
+        self.save()
 
 
 class VoteQuestion(models.Model):

@@ -8,11 +8,49 @@ from wp_core.models import (
         Tag
     )
 
+from django.db.models import Sum, When, Case, IntegerField, Count
+from django.db.models.functions import Coalesce
+import logging
+logger = logging.getLogger(__name__)
+
+
+def close_questions(modeladmin, request, queryset):
+    logger.info("closing {} questions...".format(queryset.count()))
+    for question in queryset:
+        question.close()
+
+
+close_questions.short_description = "Close the selected Questions for Voting"
+
 
 class QuestionAdmin(admin.ModelAdmin):
     form = QuestionForm
     filter_horizontal = ('tags',)
+    actions = [close_questions]
+    list_display = (
+            'id',
+            'text',
+            'user',
+            'closed',
+            'upvotes',
+            )
 
+    def get_queryset(self, request):
+        qs = super(QuestionAdmin, self).get_queryset(request)
+        qs = qs.annotate(
+                upvotes=Coalesce(Sum(
+                        Case(
+                            When(votequestion__up=True, then=1),
+                            When(votequestion__up=False, then=0),
+                            output_field=IntegerField()
+                        )
+                    ), 0)
+            )
+        return qs
+
+    def upvotes(self, obj):
+        return obj.upvotes
+    upvotes.admin_order_field = 'upvotes'
 
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Answer)
