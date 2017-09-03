@@ -10,7 +10,7 @@ from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, PermissionDenied
 
-from django.db.models import Sum, When, Case, IntegerField
+from django.db.models import Sum, When, Case, IntegerField, Count
 from django.db.models.functions import Coalesce
 from users.utils import slack_notify_report
 
@@ -64,7 +64,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionSerializer
     pagination_class = NewestQuestionsSetPagination
     filter_backends = (filters.OrderingFilter,)
-    ordering_fields = ('time_created', 'upvotes')
+    ordering_fields = ('time_created', 'upvotes', 'closed_date')
     ordering = ('-time_created')
 
     def get_queryset(self):
@@ -78,12 +78,13 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                             )
                         ), 0)
                 )
+        qs = qs.annotate(answer_count=Count('answers'))
         if 'answered' in request.GET and request.GET['answered'] is not None:
             answered = request.GET['answered']
             if answered == 'true':
-                return qs.filter(closed=True)
+                return qs.filter(answer_count__gt=0)
             if answered == 'false':
-                return qs.filter(closed=False)
+                return qs.filter(answer_count=0)
 
         return qs
 
