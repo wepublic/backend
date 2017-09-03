@@ -10,7 +10,7 @@ from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, PermissionDenied
 
-from django.db.models import Sum, When, Case, IntegerField
+from django.db.models import Sum, When, Case, IntegerField, Count
 from django.db.models.functions import Coalesce
 from users.utils import slack_notify_report
 
@@ -61,20 +61,32 @@ class TagViewSet(viewsets.ModelViewSet):
 
 class QuestionsViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly, StaffOrOwnerCanModify]
-    queryset = Question.objects.annotate(
-                upvotes=Coalesce(Sum(
-                        Case(
-                            When(votequestion__up=True, then=1),
-                            When(votequestion__up=False, then=0),
-                            output_field=IntegerField()
-                        )
-                    ), 0)
-            )
     serializer_class = QuestionSerializer
     pagination_class = NewestQuestionsSetPagination
     filter_backends = (filters.OrderingFilter,)
-    ordering_fields = ('time_created', 'upvotes')
+    ordering_fields = ('time_created', 'upvotes', 'closed_date')
     ordering = ('-time_created')
+
+    def get_queryset(self):
+        request = self.request
+        qs = Question.objects.annotate(
+                    upvotes=Coalesce(Sum(
+                            Case(
+                                When(votequestion__up=True, then=1),
+                                When(votequestion__up=False, then=0),
+                                output_field=IntegerField()
+                            )
+                        ), 0)
+                )
+        qs = qs.annotate(answer_count=Count('answers'))
+        if 'answered' in request.GET and request.GET['answered'] is not None:
+            answered = request.GET['answered']
+            if answered == 'true':
+                return qs.filter(answer_count__gt=0)
+            if answered == 'false':
+                return qs.filter(answer_count=0)
+
+        return qs
 
     def create(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -96,19 +108,14 @@ class QuestionsViewSet(viewsets.ModelViewSet):
     @list_route(methods=['get'], permission_classes=[IsAuthenticated])
     def my(self, request):
         questions = self.get_queryset().filter(user=request.user)
-        answered = request.GET.get('answered')
-        if answered is not None:
-            if answered == 'true':
-                questions = questions.exclude(answers=None)
-            if answered == 'false':
-                questions = questions.filter(answers=None)
+
         serializer = self.get_serializer(questions, many=True)
         return Response(serializer.data)
 
     @detail_route(methods=['get'], permission_classes=[IsAuthenticated])
     def answers(self, request, pk=None):
         try:
-            question = self.get_queryset().get(pk=pk)
+            question = Question.objects.all().get(pk=pk)
         except Question.DoesNotExist:
             raise NotFound(
                     detail='Question with the id %s does not exist' % pk
@@ -125,7 +132,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
     def tags(self, request, pk=None):
 
         try:
-            question = self.get_queryset().get(pk=pk)
+            question = Question.objects.all().get(pk=pk)
         except Question.DoesNotExist:
             raise NotFound(
                     detail='Question with the id %s does not exist' % pk
@@ -136,9 +143,9 @@ class QuestionsViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['get'], permission_classes=[IsAuthenticated])
     def random(self, request):
-        questions = self.get_queryset().exclude(
+        questions = Question.objects.filter(closed=False).exclude(
                 votequestion__user=request.user
-                ).filter(answers=None)
+                )
         questions_length = questions.count()
         if questions_length == 0:
             return Response({"detail": "No Questions Left"}, status=429)
@@ -164,6 +171,9 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                     detail='Question with the id %s does not exist' % pk
                 )
 
+        if question.closed:
+            raise PermissionDenied(
+                    detail='Question {} is already closed'.format(question.id))
         question.vote_by(request.user, True)
 
         # get the question again, so the upvote count updates
@@ -207,6 +217,9 @@ class QuestionsViewSet(viewsets.ModelViewSet):
             question = self.get_queryset().get(pk=pk)
         except Question.DoesNotExist:
             raise NotFound(detail='Question id %s does not exist' % pk)
+        if question.closed:
+            raise PermissionDenied(
+                    detail='Question {} is already closed'.format(question.id))
         question.vote_by(request.user, False)
         question = self.get_queryset().get(pk=pk)
         return Response(
