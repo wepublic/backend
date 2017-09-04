@@ -69,6 +69,17 @@ class QuestionsViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         request = self.request
+        qs = self.get_annotated_questions()
+        if 'answered' in request.GET and request.GET['answered'] is not None:
+            answered = request.GET['answered']
+            if answered == 'true':
+                return qs.filter(answer_count__gt=0)
+            if answered == 'false':
+                return qs.filter(answer_count=0)
+
+        return qs
+
+    def get_annotated_questions(self):
         qs = Question.objects.annotate(
                     upvotes=Coalesce(Sum(
                             Case(
@@ -79,13 +90,6 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                         ), 0)
                 )
         qs = qs.annotate(answer_count=Count('answers'))
-        if 'answered' in request.GET and request.GET['answered'] is not None:
-            answered = request.GET['answered']
-            if answered == 'true':
-                return qs.filter(answer_count__gt=0)
-            if answered == 'false':
-                return qs.filter(answer_count=0)
-
         return qs
 
     def create(self, request):
@@ -143,7 +147,9 @@ class QuestionsViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['get'], permission_classes=[IsAuthenticated])
     def random(self, request):
-        questions = Question.objects.filter(closed=False).exclude(
+        questions = self.get_annotated_questions().filter(
+                closed=False
+                ).exclude(
                 votequestion__user=request.user
                 )
         questions_length = questions.count()
