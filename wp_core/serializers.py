@@ -31,11 +31,10 @@ class QuestionSerializer(serializers.ModelSerializer):
     upvotes = serializers.IntegerField(read_only=True)
     voted = serializers.SerializerMethodField(read_only=True)
     answers = AnswerLinkSerializer(many=True, read_only=True)
-    user = UserLinkSerializer(read_only=True)
 
     class Meta:
         model = Question
-        exclude = ('votes',)
+        exclude = ('votes', 'user')
 
     def get_voted(self, obj):
         if ('request' in self.context and
