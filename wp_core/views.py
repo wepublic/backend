@@ -10,7 +10,7 @@ from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, PermissionDenied
 
-from django.db.models import Sum, When, Case, IntegerField, Count
+from django.db.models import Sum, When, Case, IntegerField
 from django.db.models.functions import Coalesce
 from users.utils import slack_notify_report
 
@@ -73,9 +73,9 @@ class QuestionsViewSet(viewsets.ModelViewSet):
         if 'answered' in request.GET and request.GET['answered'] is not None:
             answered = request.GET['answered']
             if answered == 'true':
-                return qs.filter(answer_count__gt=0)
+                return qs.exclude(answers=None)
             if answered == 'false':
-                return qs.filter(answer_count=0)
+                return qs.filter(answers=None)
 
         return qs
 
@@ -89,7 +89,6 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                             )
                         ), 0)
                 )
-        qs = qs.annotate(answer_count=Count('answers'))
         return qs
 
     def create(self, request):

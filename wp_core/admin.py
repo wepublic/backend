@@ -8,7 +8,7 @@ from wp_core.models import (
         Tag
     )
 
-from django.db.models import Sum, When, Case, IntegerField, Count
+from django.db.models import Sum, When, Case, IntegerField
 from django.db.models.functions import Coalesce
 import logging
 logger = logging.getLogger(__name__)
@@ -51,6 +51,7 @@ class QuestionAdmin(admin.ModelAdmin):
     def upvotes(self, obj):
         return obj.upvotes
     upvotes.admin_order_field = 'upvotes'
+
 
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Answer)
