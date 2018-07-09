@@ -7,4 +7,3 @@ htmlcov/
 wepublic_backend/staticfiles/
 media/
 activate
-settings_local.py

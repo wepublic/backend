@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from users.models import User
+from wp_party.models import Party
 from wp_core.models import (
         Question,
         Answer,
@@ -28,6 +29,8 @@ class Command(BaseCommand):
             self.add_tags()
         if(model == 'question' or model == 'all'):
             self.add_questions()
+        if(model == 'party' or model == 'all'):
+            self.add_parties()
         if(model == 'answer' or model == 'all'):
             self.add_answers()
         if(model == 'vote-question' or model == 'all'):
@@ -85,16 +88,30 @@ class Command(BaseCommand):
                 q.tags.add(Tag.objects.all()[randint(0, tag_count-1)])
             q.save()
 
+    def add_parties(self, number=5):
+
+        parties = { 'SPD': 'Sozialdemokratische Partei Deutschlands',
+                'CDU': 'Christlich Demokratische Union',
+                'FDP': 'Freie Demokratische Partei',
+                'AfD': 'Alternative für Deutschland',
+                'DIE GRÜNEN': 'Bündnis 90 / Die Grünen' }
+
+        for short_name, name in parties.items():
+            p = Party(short_name=short_name, name=name)
+            p.save()
+
     def add_answers(self, number=70):
         fake = Factory.create('de_DE')
         user_count = User.objects.count()
         question_count = Question.objects.count()
+        party_count = Party.objects.count()
 
         for _ in range(0, number):
             user = User.objects.all()[randint(0, user_count-1)]
             text = fake.text(max_nb_chars=300)
             question = Question.objects.all()[randint(0, question_count-1)]
-            Answer.objects.create(text=text, user=user, question=question)
+            party = Party.objects.all()[randint(0, party_count-1)]
+            Answer.objects.create(text=text, user=user, question=question, party=party)
 
     def add_votes_question(self, number_max=30):
         users = User.objects.all()
