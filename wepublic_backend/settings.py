@@ -64,7 +64,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'wepublic_backend.urls'
 
 CORS_ORIGIN_WHITELIST = [
-        'localhost:8100',
+        'http://localhost:8100',
     ]
 
 TEMPLATES = [
