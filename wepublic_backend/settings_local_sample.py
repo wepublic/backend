@@ -12,11 +12,11 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': '<DATABASE NAME>',
-        'USER': '<username >',
-        'PASSWORD': '<pw>',
-        'HOST': '<DNS or IP of postgres server>',
-        'PORT': '<Port of PSQL server>',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'db',
+        'PORT': 5432
     }
 }
 
