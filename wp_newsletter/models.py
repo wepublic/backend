@@ -2,6 +2,7 @@ from django.db import models
 
 
 class NewsLetterAddress(models.Model):
+    id = models.BigAutoField(primary_key=True)
     email = models.EmailField(
             'email address',
             unique=True,

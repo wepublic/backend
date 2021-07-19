@@ -5,6 +5,7 @@ from users.models import User
 
 
 class NewsEntry(models.Model):
+    id = models.BigAutoField(primary_key=True)
     title = models.CharField(max_length=128)
     content = models.TextField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
