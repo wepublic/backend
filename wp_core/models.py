@@ -25,7 +25,7 @@ class Question(models.Model):
             through="VoteQuestion",
             related_name='votes'
         )
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     closed = models.BooleanField(default=False)
     closed_date = models.DateTimeField(null=True)
