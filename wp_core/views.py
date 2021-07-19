@@ -6,7 +6,7 @@ from rest_framework.permissions import (
         IsAuthenticated,
     )
 from rest_framework.reverse import reverse_lazy
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, PermissionDenied
 
@@ -37,7 +37,7 @@ class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
-    @detail_route(
+    @action(detail=True,
             methods=['get'],
             pagination_class=NewestQuestionsSetPagination
             )
@@ -108,14 +108,14 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                 headers=headers
             )
 
-    @list_route(methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def my(self, request):
         questions = self.get_queryset().filter(user=request.user)
 
         serializer = self.get_serializer(questions, many=True)
         return Response(serializer.data)
 
-    @detail_route(methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
     def answers(self, request, pk=None):
         try:
             question = Question.objects.all().get(pk=pk)
@@ -131,7 +131,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                 ).data
             )
 
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def tags(self, request, pk=None):
 
         try:
@@ -144,7 +144,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
         serializer = TagSerializer(question.tags, many=True)
         return Response(serializer.data)
 
-    @list_route(methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def random(self, request):
         questions = self.get_annotated_questions().filter(
                 closed=False
@@ -167,7 +167,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                 ).data
             )
 
-    @detail_route(methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def upvote(self, request, pk=None):
         try:
             question = self.get_queryset().get(pk=pk)
@@ -185,7 +185,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
         question = self.get_queryset().get(pk=pk)
         return Response(self.get_serializer(question).data)
 
-    @list_route(methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def upvotes(self, request):
         user = request.user
         questions = self.get_queryset().filter(
@@ -207,7 +207,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
 
         return Response(self.get_serializer(questions, many=True).data)
 
-    @list_route(methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def downvotes(self, request):
         user = request.user
         questions = self.get_queryset().filter(
@@ -216,7 +216,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
             )
         return Response(self.get_serializer(questions, many=True).data)
 
-    @detail_route(methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def downvote(self, request, pk=None):
         try:
             question = self.get_queryset().get(pk=pk)
@@ -232,7 +232,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_201_CREATED
             )
 
-    @detail_route(methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def report(self, request, pk=None):
         user = request.user
         emails = settings.REPORT_MAILS
