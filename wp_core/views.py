@@ -63,7 +63,8 @@ class QuestionsViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly, StaffOrOwnerCanModify]
     serializer_class = QuestionSerializer
     pagination_class = NewestQuestionsSetPagination
-    filter_backends = (filters.OrderingFilter,)
+    filter_backends = (filters.OrderingFilter, filters.SearchFilter,)
+    search_fields = ['text']
     ordering_fields = ('time_created', 'upvotes', 'closed_date')
     ordering = ('-time_created')
 
