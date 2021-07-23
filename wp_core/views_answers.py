@@ -3,7 +3,7 @@ from rest_framework.permissions import (
         IsAuthenticatedOrReadOnly,
         IsAuthenticated,
     )
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 
@@ -37,7 +37,7 @@ class AnswerViewSet(viewsets.ModelViewSet):
             return AnswerPostSerializer
         return self.serializer_class
 
-    @detail_route(methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def upvote(self, request, pk=None):
         try:
             answer = self.get_queryset().get(pk=pk)
@@ -52,7 +52,7 @@ class AnswerViewSet(viewsets.ModelViewSet):
                 )
         return Response(self.get_serializer(answer).data)
 
-    @detail_route(methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def downvote(self, request, pk=None):
         try:
             answer = self.get_queryset().get(pk=pk)

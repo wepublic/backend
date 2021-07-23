@@ -50,6 +50,7 @@ class CustomUserManager(BaseUserManager):
 
 
 class ReputationAction(models.Model):
+    id = models.BigAutoField(primary_key=True)
     action = models.CharField(max_length=50, unique=True)
     value = models.IntegerField()
 
@@ -62,6 +63,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     Our own extension of djangos standard :model:`auth.User` class
     """
 
+    id = models.BigAutoField(primary_key=True)
     username_validator = UnicodeUsernameValidator()
 
     email = models.EmailField(

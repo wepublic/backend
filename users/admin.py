@@ -113,7 +113,6 @@ class UserAdmin(BaseUserAdmin):
             'Personal info',
             {
                 'fields': (
-                    'username',
                     'first_name',
                     'last_name',
                     'gender',

@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class Tag(models.Model):
+    id = models.BigAutoField(primary_key=True)
     text = models.CharField(max_length=64)
 
     def __str__(self):
@@ -16,6 +17,7 @@ class Tag(models.Model):
 
 
 class Question(models.Model):
+    id = models.BigAutoField(primary_key=True)
     text = models.TextField(max_length=500)
     tags = models.ManyToManyField(Tag, related_name="questions")
     time_created = models.DateTimeField(auto_now_add=True)
@@ -25,7 +27,7 @@ class Question(models.Model):
             through="VoteQuestion",
             related_name='votes'
         )
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     closed = models.BooleanField(default=False)
     closed_date = models.DateTimeField(null=True)
@@ -67,6 +69,7 @@ class Question(models.Model):
 class VoteQuestion(models.Model):
     class Meta:
         unique_together = ['question', 'user']
+    id = models.BigAutoField(primary_key=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     time_created = models.DateTimeField(auto_now_add=True)
@@ -74,6 +77,7 @@ class VoteQuestion(models.Model):
 
 
 class Answer(models.Model):
+    id = models.BigAutoField(primary_key=True)
     text = models.TextField(max_length=5000)
     time_created = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
@@ -97,6 +101,7 @@ class Answer(models.Model):
 class VoteAnswer(models.Model):
     class Meta:
         unique_together = ['answer', 'user']
+    id = models.BigAutoField(primary_key=True)
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     time_created = models.DateTimeField(auto_now_add=True)

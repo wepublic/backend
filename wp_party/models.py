@@ -2,6 +2,7 @@ from django.db import models
 
 
 class Party(models.Model):
+    id = models.SmallAutoField(primary_key=True)
     short_name = models.CharField(
             unique=True,
             max_length=50,

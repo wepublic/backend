@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 from users.permissions import UserViewPermission
 from users.models import User
 from users.serializers import UserSerializer
@@ -37,7 +37,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [UserViewPermission]
 
-    @list_route(methods=['post'])
+    @action(detail=False, methods=['post'])
     def change_password(self, request):
         if 'email' not in request.data:
             raise exceptions.ParseError('\'email\' missing')
@@ -66,7 +66,7 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             raise exceptions.AuthenticationFailed
 
-    @list_route(methods=['post'])
+    @action(detail=False, methods=['post'])
     def token(self, request):
         """
         Acquire an API token by posting your credentials
@@ -92,7 +92,7 @@ class UserViewSet(viewsets.ModelViewSet):
                     raise exceptions.AuthenticationFailed('user not active')
             raise exceptions.AuthenticationFailed
 
-    @list_route(methods=['get'],
+    @action(detail=False, methods=['get'],
                 authentication_classes=[TokenAuthentication],
                 permission_classes=[IsAuthenticated])
     def logout(self, request):
@@ -101,7 +101,7 @@ class UserViewSet(viewsets.ModelViewSet):
         response = {'status': 'logged out'}
         return Response(response)
 
-    @list_route(authentication_classes=[TokenAuthentication])
+    @action(detail=False, authentication_classes=[TokenAuthentication])
     def me(self, request):
         if request.user.pk is None:
             raise exceptions.NotAuthenticated
@@ -150,7 +150,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user.delete()
         return Response({'status': 'ok'})
 
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def resend_validation(self, request):
         email = request.data.get('email')
         if not email:
@@ -166,7 +166,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response("okay")
 
-    @list_route(methods=['GET'],
+    @action(detail=False, methods=['GET'],
                 renderer_classes=(TemplateHTMLRenderer, ),
                 authentication_classes=[])
     def activate(self, request, pk=None):
@@ -187,7 +187,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(template_name='users/activation_success.html')
 
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def reset_password(self, request):
         serializer = ResetPasswordRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -197,7 +197,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user.password_reset_link(request)
         return Response({'success': True})
 
-    @list_route(
+    @action(detail=False, 
             methods=['GET', 'POST'],
             renderer_classes=(TemplateHTMLRenderer, )
             )

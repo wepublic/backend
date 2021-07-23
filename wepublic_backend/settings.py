@@ -67,6 +67,10 @@ CORS_ORIGIN_WHITELIST = [
         'http://localhost:8100',
     ]
 
+# This maybe necessary for development, DEACTIVATE IN PRODUCTION!
+#
+# CORS_ORIGIN_ALLOW_ALL = True
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
