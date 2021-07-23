@@ -154,7 +154,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                 )
         questions_length = questions.count()
         if questions_length == 0:
-            return Response({"detail": "No Questions Left"}, status=429)
+            return Response({"detail": "No Questions Left"}, status=204)
         if questions_length == 1:
             return Response(
                     self.get_serializer(
