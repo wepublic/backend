@@ -6,7 +6,6 @@ env:
   FAIL_LEVEL: WARNING
   ENV_TYPE: venv
   DEP_PATH: requirements.txt
-  APP_PATH: wepublic_backend/
 
 jobs:
   build:
