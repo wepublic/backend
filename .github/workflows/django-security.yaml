@@ -6,6 +6,7 @@ env:
   FAIL_LEVEL: WARNING
   ENV_TYPE: venv
   DEP_PATH: requirements.txt
+  APP_PATH: /
 
 jobs:
   build:
