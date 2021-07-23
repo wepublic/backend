@@ -6,6 +6,7 @@ env:
   FAIL_LEVEL: WARNING
   ENV_TYPE: venv
   DEP_PATH: requirements.txt
+  APP_PATH: /
 
 jobs:
   build:
@@ -17,6 +18,11 @@ jobs:
         uses: actions/checkout@master
         with:
           fetch-depth: 1
+      - name: Copy local CI settings
+        uses: canastro/copy-file-action@master
+        with:
+          source: "wepublic_backend/settings_local_github_ci.py"
+          target: "wepublic_backend/settings_local.py"
       - name: Scan Django settings for security issues
         id: check
         uses: victoriadrake/django-security-check@master
