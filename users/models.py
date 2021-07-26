@@ -151,7 +151,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         path = reverse_lazy('user-activate', request=request)
         link = "{}?key={}".format(path, self.activation_key)
-        if self.username is not '':
+        if self.username:
             name = self.username
         else:
             name = self.email
@@ -169,7 +169,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                             request=request
                             )
         link = "{}?key={}".format(path, self.reset_password_key)
-        if self.username is not '':
+        if self.username:
             name = self.username
         else:
             name = self.email
