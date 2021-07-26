@@ -97,7 +97,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         if not request.user.update_reputation('CREATE_QUESTION'):
-            raise PermissionDenied(detail='Not Enough Reputation')
+            return Response({"detail": "Not enough reputation"}, status=420)
 
         question = serializer.save()
         # self.perform_create(serializer)
