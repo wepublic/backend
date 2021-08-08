@@ -10,15 +10,15 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, PermissionDenied
 
-from django.db.models import Sum, When, Case, IntegerField
+from django.db.models import Sum, When, Case, IntegerField, BooleanField, Value
 from django.db.models.functions import Coalesce
 from users.utils import slack_notify_report
 
 from random import randint
 from wp_core.models import (
-        Question,
-        Tag,
-    )
+    Question,
+    Tag, VoteQuestion,
+)
 from wp_core.serializers import (
         QuestionSerializer,
         TagSerializer,
@@ -30,6 +30,7 @@ from wp_core.pagination import NewestQuestionsSetPagination
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db.models import Q
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -111,10 +112,20 @@ class QuestionsViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def my(self, request):
-        questions = self.get_queryset().filter(user=request.user)
-
+        """Gets all own and voted for questions."""
+        questions = self.get_queryset().filter(user=request.user).annotate(own=Value(True))
         serializer = self.get_serializer(questions, many=True)
-        return Response(serializer.data)
+        data = serializer.data
+
+        voted_questions = VoteQuestion.objects.filter(Q(user=request.user), Q(up=True))
+        for item in voted_questions:
+            real_question = self.get_queryset().annotate(own=Value(False)).get(pk=item.question.id)
+            serialized_voted_question = self.get_serializer(real_question, many=False).data
+            serialized_voted_question['own'] = False
+            if request.user != real_question.user:
+                data.append(serialized_voted_question)
+
+        return Response(data)
 
     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
     def answers(self, request, pk=None):
