@@ -53,8 +53,15 @@ class QuestionAdmin(admin.ModelAdmin):
     upvotes.admin_order_field = 'upvotes'
 
 
+class VoteQuestionAdmin(admin.ModelAdmin):
+    list_display = (
+        'user'
+        'question',
+    )
+
+
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Answer)
-admin.site.register(VoteQuestion)
+admin.site.register(VoteQuestion, VoteQuestionAdmin)
 admin.site.register(VoteAnswer)
 admin.site.register(Tag)
