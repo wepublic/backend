@@ -55,7 +55,7 @@ class QuestionAdmin(admin.ModelAdmin):
 
 class VoteQuestionAdmin(admin.ModelAdmin):
     list_display = (
-        'user'
+        'user',
         'question',
     )
 
