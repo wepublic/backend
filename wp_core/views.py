@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework import filters
@@ -128,7 +129,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
         return Response(data)
 
     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
-    def answers(self, request, pk=None):
+    def answers(self, request, pk=None) -> HttpResponse:
         try:
             question = Question.objects.all().get(pk=pk)
         except Question.DoesNotExist:
@@ -144,7 +145,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
             )
 
     @action(detail=True, methods=['get'])
-    def tags(self, request, pk=None):
+    def tags(self, request, pk=None) -> HttpResponse:
 
         try:
             question = Question.objects.all().get(pk=pk)
@@ -157,7 +158,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
-    def random(self, request):
+    def random(self, request) -> HttpResponse:
         questions = self.get_annotated_questions().filter(
                 closed=False
                 ).exclude(
@@ -180,7 +181,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
             )
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
-    def upvote(self, request, pk=None):
+    def upvote(self, request, pk=None) -> HttpResponse:
         try:
             question = self.get_queryset().get(pk=pk)
         except Question.DoesNotExist:
@@ -198,7 +199,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(question).data)
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
-    def upvotes(self, request):
+    def upvotes(self, request) -> HttpResponse:
         user = request.user
         questions = self.get_queryset().filter(
                 votequestion__up=True,
@@ -220,7 +221,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(questions, many=True).data)
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
-    def downvotes(self, request):
+    def downvotes(self, request) -> HttpResponse:
         user = request.user
         questions = self.get_queryset().filter(
                 votequestion__up=False,
@@ -229,7 +230,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(questions, many=True).data)
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
-    def downvote(self, request, pk=None):
+    def downvote(self, request, pk=None) -> HttpResponse:
         try:
             question = self.get_queryset().get(pk=pk)
         except Question.DoesNotExist:
@@ -245,7 +246,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
             )
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
-    def report(self, request, pk=None):
+    def report(self, request, pk=None) -> HttpResponse:
         user = request.user
         emails = settings.REPORT_MAILS
         url = reverse_lazy(
