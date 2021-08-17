@@ -188,6 +188,9 @@ WP_DEFAULT_REPUTATION = [
 WP_REPUTATION_VOTE = 1
 WP_REPUTATION_QUESTION = -10
 
+WP_DEFAULT_STAFF_USER = 'plusme'
+WP_DEFAULT_STAFF_USER_EMAIL = 'kontakt@plus-me.de'
+
 # standard logging config. Log everything to stdout
 LOGGING = {
     'version': 1,
