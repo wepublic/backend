@@ -148,6 +148,10 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '300/day',
+        'user': '1000/day'
+    }
 }
 
 

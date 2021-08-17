@@ -10,6 +10,7 @@ from rest_framework.reverse import reverse_lazy
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.throttling import UserRateThrottle
 
 from django.db.models import Sum, When, Case, IntegerField, BooleanField, Value
 from django.db.models.functions import Coalesce
@@ -41,7 +42,8 @@ class TagViewSet(viewsets.ModelViewSet):
 
     @action(detail=True,
             methods=['get'],
-            pagination_class=NewestQuestionsSetPagination
+            pagination_class=NewestQuestionsSetPagination,
+            throttle_classes=[UserRateThrottle]
             )
     def Questions(self, request, pk=None):
         questions = Question.objects.filter(tags__pk=pk).annotate(
@@ -111,7 +113,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                 headers=headers
             )
 
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], throttle_classes=[UserRateThrottle])
     def my(self, request):
         """Gets all own and voted for questions."""
         questions = self.get_queryset().filter(user=request.user).annotate(own=Value(True))
@@ -128,7 +130,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
 
         return Response(data)
 
-    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated], throttle_classes=[UserRateThrottle])
     def answers(self, request, pk=None) -> HttpResponse:
         try:
             question = Question.objects.all().get(pk=pk)
@@ -157,7 +159,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
         serializer = TagSerializer(question.tags, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], throttle_classes=[UserRateThrottle])
     def random(self, request) -> HttpResponse:
         questions = self.get_annotated_questions().filter(
                 closed=False
@@ -180,7 +182,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                 ).data
             )
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], throttle_classes=[UserRateThrottle])
     def upvote(self, request, pk=None) -> HttpResponse:
         try:
             question = self.get_queryset().get(pk=pk)
@@ -198,7 +200,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
         question = self.get_queryset().get(pk=pk)
         return Response(self.get_serializer(question).data)
 
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], throttle_classes=[UserRateThrottle])
     def upvotes(self, request) -> HttpResponse:
         user = request.user
         questions = self.get_queryset().filter(
@@ -220,7 +222,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
 
         return Response(self.get_serializer(questions, many=True).data)
 
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], throttle_classes=[UserRateThrottle])
     def downvotes(self, request) -> HttpResponse:
         user = request.user
         questions = self.get_queryset().filter(
@@ -229,7 +231,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
             )
         return Response(self.get_serializer(questions, many=True).data)
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], throttle_classes=[UserRateThrottle])
     def downvote(self, request, pk=None) -> HttpResponse:
         try:
             question = self.get_queryset().get(pk=pk)
@@ -245,7 +247,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_201_CREATED
             )
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], throttle_classes=[UserRateThrottle])
     def report(self, request, pk=None) -> HttpResponse:
         user = request.user
         emails = settings.REPORT_MAILS
