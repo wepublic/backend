@@ -1,11 +1,16 @@
 from django.db import models
 from users.models import User
+from wepublic_backend.settings import WP_DEFAULT_STAFF_USER
 from wp_party.models import Party
 from django.utils import timezone
 from django.core import exceptions
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def get_staff_backup_user():
+    return User.objects.get(username=WP_DEFAULT_STAFF_USER, is_staff=True)
 
 
 class Tag(models.Model):
@@ -27,7 +32,7 @@ class Question(models.Model):
             through="VoteQuestion",
             related_name='votes'
         )
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.SET(get_staff_backup_user))
 
     closed = models.BooleanField(default=False)
     closed_date = models.DateTimeField(null=True)
@@ -86,7 +91,7 @@ class Answer(models.Model):
             on_delete=models.CASCADE,
             related_name='answers'
         )
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.SET(get_staff_backup_user))
     party = models.ForeignKey(Party, on_delete=models.CASCADE, null=True)
     votes = models.ManyToManyField(
             User,
