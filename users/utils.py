@@ -6,6 +6,8 @@ from django.template.loader import render_to_string
 from django.conf import settings
 import requests
 
+from wepublic_backend.settings_local import SUPPORT_ADDRESS, ADMIN_ADDRESS
+
 
 def is_staff_user(user):
     return user.groups.filter(name="staff").exists()
@@ -22,26 +24,26 @@ def generate_random_key(username):
 
 
 def send_activation_mail(username, activation_link, recipient):
-    params = {'username': username, 'link': activation_link}
+    params = {'username': username, 'link': activation_link, 'support': SUPPORT_ADDRESS}
     plain = render_to_string('users/mails/activation_email.txt', params)
     html = render_to_string('users/mails/activation_email.html', params)
     send_mail(
             'Dein Konto bei +me',
             plain,
-            'admin@wepublic.me',
+            ADMIN_ADDRESS,
             [recipient],
             html_message=html
     )
 
 
 def send_password_reset_mail(username, password_reset_link, recipient):
-    params = {'username': username, 'link': password_reset_link}
+    params = {'username': username, 'link': password_reset_link, 'support': SUPPORT_ADDRESS}
     plain = render_to_string('users/mails/password_reset_email.txt', params)
     html = render_to_string('users/mails/password_reset_email.html', params)
     send_mail(
             'Dein Passwort bei +me zurücksetzen',
             plain,
-            'admin@wepublic.me',
+            ADMIN_ADDRESS,
             [recipient],
             html_message=html
     )
