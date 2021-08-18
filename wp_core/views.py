@@ -17,6 +17,8 @@ from django.db.models.functions import Coalesce
 from users.utils import slack_notify_report
 
 from random import randint
+
+from wepublic_backend.settings_local import ADMIN_ADDRESS
 from wp_core.models import (
     Question,
     Tag, VoteQuestion,
@@ -272,7 +274,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
             send_mail(
                     'Eine Frage wurde gemeldet',
                     plain,
-                    'admin@wepublic.me',
+                    ADMIN_ADDRESS,
                     emails,
                     html_message=html
             )

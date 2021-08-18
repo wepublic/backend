@@ -19,6 +19,7 @@ from django.utils import timezone
 from rest_framework.renderers import TemplateHTMLRenderer
 from users.forms import PasswordResetForm
 from django.shortcuts import render
+from wepublic_backend.settings_local import SUPPORT_ADDRESS
 # Create your views here.
 
 
@@ -180,12 +181,18 @@ class UserViewSet(viewsets.ModelViewSet):
         if timezone.now() > user.activation_key_exprires:
             raise exceptions.AuthenticationFailed('key expired')
         if user.is_active:
-            return Response(template_name='users/activation_again.html')
+            return Response(
+                template_name='users/activation_again.html',
+                data={'support': SUPPORT_ADDRESS}
+            )
 
         user.is_active = True
         user.save()
 
-        return Response(template_name='users/activation_success.html')
+        return Response(
+            template_name='users/activation_success.html',
+            data={'support': SUPPORT_ADDRESS}
+        )
 
     @action(detail=False, methods=['POST'])
     def reset_password(self, request):
@@ -219,7 +226,11 @@ class UserViewSet(viewsets.ModelViewSet):
                 # process the data in form.cleaned_data as required
                 # ...
                 # redirect to a new URL:
-                return render(request, 'users/password_reset_success.html')
+                return render(
+                    request,
+                    'users/password_reset_success.html',
+                    {'support': SUPPORT_ADDRESS}
+                )
 
         # if a GET (or any other method) we'll create a blank form
         else:
@@ -232,7 +243,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return render(
                 request,
                 'users/password_reset_page.html',
-                {'form': form}
+                {'form': form, 'support': SUPPORT_ADDRESS}
                 )
 
 
