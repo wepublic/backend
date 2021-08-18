@@ -27,14 +27,30 @@ class AnswerLinkSerializer(serializers.ModelSerializer):
         fields = ('id', 'user')
 
 
+class VoteQuestionSerializer(serializers.ModelSerializer):
+    up = serializers.BooleanField(read_only=True)
+    question = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = VoteQuestion
+        fields = ('question', 'up')
+
+
 class QuestionSerializer(serializers.ModelSerializer):
     upvotes = serializers.IntegerField(read_only=True)
     voted = serializers.SerializerMethodField(read_only=True)
     answers = AnswerLinkSerializer(many=True, read_only=True)
+    own = serializers.SerializerMethodField()
 
     class Meta:
         model = Question
         exclude = ('votes', 'user')
+
+    def get_own(self, obj):
+        try:
+            return obj.user == self.context['request'].user
+        except:
+            return None
 
     def get_voted(self, obj):
         if ('request' in self.context and

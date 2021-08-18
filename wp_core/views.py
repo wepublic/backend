@@ -27,6 +27,7 @@ from wp_core.serializers import (
         QuestionSerializer,
         TagSerializer,
         AnswerSerializer,
+        VoteQuestionSerializer,
     )
 from wp_core.permissions import OnlyStaffCanModify, StaffOrOwnerCanModify
 from wp_core.pagination import NewestQuestionsSetPagination
@@ -35,6 +36,8 @@ from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.conf import settings
 from django.db.models import Q
+
+from django.core.serializers.json import DjangoJSONEncoder
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -124,7 +127,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
 
         voted_questions = VoteQuestion.objects.filter(Q(user=request.user), Q(up=True))
         for item in voted_questions:
-            real_question = self.get_queryset().annotate(own=Value(False)).get(pk=item.question.id)
+            real_question = self.get_queryset().get(pk=item.question.id)
             serialized_voted_question = self.get_serializer(real_question, many=False).data
             serialized_voted_question['own'] = False
             if request.user != real_question.user:
@@ -201,6 +204,14 @@ class QuestionsViewSet(viewsets.ModelViewSet):
         # get the question again, so the upvote count updates
         question = self.get_queryset().get(pk=pk)
         return Response(self.get_serializer(question).data)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], throttle_classes=[UserRateThrottle])
+    def myvotes(self, request) -> HttpResponse:
+        user = request.user
+
+        votes = VoteQuestion.objects.filter(user=user)
+
+        return Response(VoteQuestionSerializer(votes, many=True).data)
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], throttle_classes=[UserRateThrottle])
     def upvotes(self, request) -> HttpResponse:
