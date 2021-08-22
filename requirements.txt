@@ -36,3 +36,5 @@ Unidecode==1.2.0
 uritemplate==3.0.1
 whitenoise==5.3.0
 django-cors-headers
+django-post-office==3.5.3
+uwsgi~=2.0.19

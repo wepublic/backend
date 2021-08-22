@@ -18,7 +18,7 @@ from users.utils import slack_notify_report
 
 from random import randint
 
-from wepublic_backend.settings_local import ADMIN_ADDRESS
+from wepublic_backend.settings import NOREPLY_ADDRESS
 from wp_core.models import (
     Question,
     Tag, VoteQuestion,
@@ -285,7 +285,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
             send_mail(
                     'Eine Frage wurde gemeldet',
                     plain,
-                    ADMIN_ADDRESS,
+                    NOREPLY_ADDRESS,
                     emails,
                     html_message=html
             )

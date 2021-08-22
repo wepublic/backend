@@ -19,7 +19,9 @@ from django.utils import timezone
 from rest_framework.renderers import TemplateHTMLRenderer
 from users.forms import PasswordResetForm
 from django.shortcuts import render
-from wepublic_backend.settings_local import SUPPORT_ADDRESS
+from wepublic_backend.settings import SUPPORT_ADDRESS, LATEST_VERSION
+
+
 # Create your views here.
 
 
@@ -83,7 +85,7 @@ class UserViewSet(viewsets.ModelViewSet):
             )
         if user is not None:
             token, su = Token.objects.get_or_create(user=user)
-            response = {'Token': token.key}
+            response = {'Token': token.key, 'Version': LATEST_VERSION}
             return Response(response)
         else:
             try:
@@ -107,7 +109,11 @@ class UserViewSet(viewsets.ModelViewSet):
         if request.user.pk is None:
             raise exceptions.NotAuthenticated
         serializer = self.get_serializer(request.user)
-        return Response(serializer.data)
+
+        user_data = serializer.data
+        user_data['Version'] = LATEST_VERSION
+
+        return Response(user_data)
 
     def list(self, request):
         print('in list')
@@ -118,7 +124,6 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request):
-        print(request.data)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)

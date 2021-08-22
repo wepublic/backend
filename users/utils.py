@@ -1,12 +1,13 @@
 from django.utils.crypto import get_random_string
 import hashlib
 
-from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
 import requests
 
-from wepublic_backend.settings_local import SUPPORT_ADDRESS, ADMIN_ADDRESS
+from wepublic_backend.settings import SUPPORT_ADDRESS, NOREPLY_ADDRESS
+
+from post_office import mail
 
 
 def is_staff_user(user):
@@ -23,6 +24,20 @@ def generate_random_key(username):
     return hashlib.sha256((secret_key+username).encode('utf-8')).hexdigest()
 
 
+def send_mail(re, plain, sender, recipients, html_message):
+
+    mail.send(
+        recipients=recipients,
+        sender=sender,
+        template=None,
+        context=None,
+        subject=re,
+        message=plain,
+        html_message=html_message,
+        priority="now"
+    )
+
+
 def send_activation_mail(username, activation_link, recipient):
     params = {'username': username, 'link': activation_link, 'support': SUPPORT_ADDRESS}
     plain = render_to_string('users/mails/activation_email.txt', params)
@@ -30,7 +45,7 @@ def send_activation_mail(username, activation_link, recipient):
     send_mail(
             'Dein Konto bei +me',
             plain,
-            ADMIN_ADDRESS,
+            NOREPLY_ADDRESS,
             [recipient],
             html_message=html
     )
@@ -43,10 +58,11 @@ def send_password_reset_mail(username, password_reset_link, recipient):
     send_mail(
             'Dein Passwort bei +me zurücksetzen',
             plain,
-            ADMIN_ADDRESS,
+            NOREPLY_ADDRESS,
             [recipient],
             html_message=html
     )
+
 
 def slack_notify_question(question, link):
     if not settings.SLACK_NOTIFICATIONS_ACTIVE:

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'wp_news',
     'wp_newsletter',
     'wp_party',
+    'post_office',
 ]
 
 MIDDLEWARE = [
@@ -174,6 +175,11 @@ STATICFILES_DIRS = (
 # Update database configuration with $DATABASE_URL.
 db_from_env = dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(db_from_env)
+
+SUPPORT_ADDRESS = 'kontakt@plus-me.de'
+NOREPLY_ADDRESS = 'noreply@plus-me.de'
+
+LATEST_VERSION = '0.6.0'
 
 WP_DEFAULT_REPUTATION = [
     {
