@@ -1,62 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="de">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Vielen Danke für deine Anmeldung</title>
-    <!-- link href="styles/styles.css" rel="stylesheet" type="text/css" media="screen" /-->
-    <link href="https://fonts.googleapis.com/css?family=Palanquin|Palanquin+Dark"
-          rel="stylesheet">
-    <meta name="viewport"
-          content="width=device-width, initial-scale = 1.0, user-scalable = no">
+{% include "header.html" with title="Vielen Danke für deine Anmeldung" %}
 
-    <style type="text/css">
-        body {
-            background-color: #ffce0f;
-        }
-
-        h1 {
-            font-family: 'Palanquin Dark', sans-serif;
-            font-size: 32px;
-            text-align: center;
-        }
-
-        p {
-            font-family: 'Palanquin', sans-serif;
-            font-size: 18px;
-            font-weight: 600;
-            text-align: center;
-            line-height: 110%;
-        }
-
-        .wrapper {
-            margin-top: 7%;
-        }
-
-        #best-link {
-            font-family: 'Palanquin Dark', sans-serif;
-            font-weight: lighter;
-            font-size: 32px;
-            line-height: 320%;
-        }
-
-        #mail-link {
-            line-height: 250%;
-        }
-
-        #team {
-            font-size: 22px;
-            line-height: 170%;
-        }
-
-        #logo-wrap {
-            width: 50%;
-            height: auto;
-            margin: auto;
-        }
-    </style>
-</head>
-<body>
 <div class="wrapper">
     <div class="section">
         <div class="main-content">
@@ -73,5 +16,5 @@
         </div>
     </div>
 </div>
-</body>
-</html>
+
+{% include "footer.html" %}
