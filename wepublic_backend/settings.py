@@ -179,6 +179,8 @@ DATABASES['default'].update(db_from_env)
 SUPPORT_ADDRESS = 'kontakt@plus-me.de'
 NOREPLY_ADDRESS = 'noreply@plus-me.de'
 
+MAILQUEUE_ON = False
+
 LATEST_VERSION = '0.6.0'
 
 WP_DEFAULT_REPUTATION = [
