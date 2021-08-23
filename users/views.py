@@ -151,8 +151,10 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.save()
         return Response(serializer.data)
 
-    def destroy(self, request, pk=None):
-        user = self.get_object()
+    @action(detail=False, methods=['DELETE'],
+            authentication_classes=[TokenAuthentication])
+    def delete(self, request):
+        user = request.user
         user.delete()
         return Response({'status': 'ok'})
 
