@@ -20,9 +20,10 @@
         }
 
         .background {
-            position: fixed;
             height: 100%;
             width: 100%;
+            position: fixed;
+            z-index: -1;
         }
 
         h1 {
@@ -117,6 +118,8 @@
 <div class="background">
     <svg preserveAspectRatio="none"
          viewBox="0 0 1440 780"
+         width="100%"
+         height="100%"
          fill="none"
          xmlns="http://www.w3.org/2000/svg">
         <rect width="1440" height="780" fill="white"/>
@@ -175,8 +178,8 @@
         </defs>
     </svg>
 </div>
-
 <div class="nav-container">
+
     <div class="title">+me</div>
     <div class="links">
         <a href="https://www.plus-me.de/faq" target="_blank">
