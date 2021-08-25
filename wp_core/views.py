@@ -73,7 +73,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionSerializer
     pagination_class = NewestQuestionsSetPagination
     filter_backends = (filters.OrderingFilter, filters.SearchFilter,)
-    search_fields = ['text']
+    search_fields = ['text', 'tags__text']
     ordering_fields = ('time_created', 'upvotes', 'closed_date')
     ordering = ('-time_created')
 
