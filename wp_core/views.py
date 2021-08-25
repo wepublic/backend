@@ -263,7 +263,6 @@ class QuestionsViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], throttle_classes=[UserRateThrottle])
     def report(self, request, pk=None) -> HttpResponse:
         user = request.user
-        emails = settings.REPORT_MAILS
         url = reverse_lazy(
                 'admin:wp_core_question_change',
                 args=([pk]),
@@ -282,6 +281,8 @@ class QuestionsViewSet(viewsets.ModelViewSet):
         html = render_to_string(
                 'wp_core/mails/report_question_email.html', params)
         if settings.REPORT_MAILS_ACTIVE:
+            emails = settings.REPORT_MAILS
+
             send_mail(
                     'Eine Frage wurde gemeldet',
                     plain,
