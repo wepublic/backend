@@ -34,7 +34,7 @@ def send_mail(re, plain, sender, recipients, html_message):
         subject=re,
         message=plain,
         html_message=html_message,
-        priority="now"
+        priority="high"
     )
 
 
