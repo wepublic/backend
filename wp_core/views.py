@@ -164,8 +164,17 @@ class QuestionsViewSet(viewsets.ModelViewSet):
         serializer = TagSerializer(question.tags, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], throttle_classes=[UserRateThrottle])
+    @action(detail=False, methods=['get'], throttle_classes=[UserRateThrottle])
     def random(self, request) -> HttpResponse:
+        if (request.user.is_anonymous is True):
+            questions = self.get_annotated_questions().filter(
+                closed=False
+                )
+            return Response(
+                self.get_serializer(
+                    questions[randint(0, questions.count()-1)]
+                ).data
+            )
         questions = self.get_annotated_questions().filter(
                 closed=False
                 ).exclude(
