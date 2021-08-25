@@ -166,7 +166,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], throttle_classes=[UserRateThrottle])
     def random(self, request) -> HttpResponse:
-        if (request.user.is_anonymous is True):
+        if request.user.is_anonymous is True:
             questions = self.get_annotated_questions().filter(
                 closed=False
                 )
