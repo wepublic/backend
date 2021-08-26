@@ -35,7 +35,7 @@ class Question(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET(get_staff_backup_user))
 
     closed = models.BooleanField(default=False)
-    closed_date = models.DateTimeField(null=True)
+    closed_date = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         get_latest_by = 'time_created'
