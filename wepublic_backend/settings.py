@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'wp_newsletter',
     'wp_party',
     'post_office',
+    'fcm_django'
 ]
 
 MIDDLEWARE = [
