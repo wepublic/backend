@@ -129,16 +129,21 @@ class QuestionsViewSet(viewsets.ModelViewSet):
         """Gets all own and voted for questions."""
         questions = self.get_queryset().filter(user=request.user).annotate(own=Value(True))
 
-        voted_questions = VoteQuestion.objects.filter(Q(user=request.user), Q(up=True))
+        if request.version == 'v2':
+            voted_questions = VoteQuestion.objects.filter(Q(user=request.user), Q(up=True))
 
-        for item in voted_questions:
-            real_question = self.get_queryset().annotate(own=Value(False)).filter(pk=item.question.id)
-            questions |= real_question
+            for item in voted_questions:
+                real_question = self.get_queryset().annotate(own=Value(False)).filter(pk=item.question.id)
+                questions |= real_question
 
-        page = self.paginate_queryset(questions)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+            page = self.paginate_queryset(questions)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+        else:
+            serializer = self.get_serializer(questions, many=True)
+            data = serializer.data
+            return Response(data)
 
     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated], throttle_classes=[UserRateThrottle])
     def answers(self, request, pk=None) -> HttpResponse:
