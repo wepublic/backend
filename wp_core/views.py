@@ -118,22 +118,27 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                 headers=headers
             )
 
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], throttle_classes=[UserRateThrottle])
+    @action(
+        detail=False,
+        methods=['get'],
+        permission_classes=[IsAuthenticated],
+        throttle_classes=[UserRateThrottle],
+        pagination_class=NewestQuestionsSetPagination,
+    )
     def my(self, request):
         """Gets all own and voted for questions."""
         questions = self.get_queryset().filter(user=request.user).annotate(own=Value(True))
-        serializer = self.get_serializer(questions, many=True)
-        data = serializer.data
 
         voted_questions = VoteQuestion.objects.filter(Q(user=request.user), Q(up=True))
-        for item in voted_questions:
-            real_question = self.get_queryset().get(pk=item.question.id)
-            serialized_voted_question = self.get_serializer(real_question, many=False).data
-            serialized_voted_question['own'] = False
-            if request.user != real_question.user:
-                data.append(serialized_voted_question)
 
-        return Response(data)
+        for item in voted_questions:
+            real_question = self.get_queryset().annotate(own=Value(False)).filter(pk=item.question.id)
+            questions |= real_question
+
+        page = self.paginate_queryset(questions)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated], throttle_classes=[UserRateThrottle])
     def answers(self, request, pk=None) -> HttpResponse:
