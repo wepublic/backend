@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.throttling import UserRateThrottle
 
-from django.db.models import Sum, When, Case, IntegerField, BooleanField, Value
+from django.db.models import Sum, When, Case, IntegerField, Value, Subquery
 from django.db.models.functions import Coalesce
 from users.utils import slack_notify_report
 
@@ -127,15 +127,19 @@ class QuestionsViewSet(viewsets.ModelViewSet):
     )
     def my(self, request):
         """Gets all own and voted for questions."""
-        questions = self.get_queryset().filter(user=request.user).annotate(own=Value(True))
+        subquery = Subquery(
+            VoteQuestion.objects.filter(
+                user=request.user,
+                up=True
+            ).values('question_id')
+        )
+        questions = self.get_queryset().filter(
+            Q(user=request.user) | Q(id__in=subquery)
+        ).annotate(
+            own=Value(True)
+        )
 
         if request.version == 'v2':
-            voted_questions = VoteQuestion.objects.filter(Q(user=request.user), Q(up=True))
-
-            for item in voted_questions:
-                real_question = self.get_queryset().annotate(own=Value(False)).filter(pk=item.question.id)
-                questions |= real_question
-
             page = self.paginate_queryset(questions)
             if page is not None:
                 serializer = self.get_serializer(page, many=True)
