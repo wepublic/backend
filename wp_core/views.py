@@ -182,12 +182,14 @@ class QuestionsViewSet(viewsets.ModelViewSet):
     def random(self, request) -> HttpResponse:
         questions = self.get_annotated_questions().filter(
                 closed=False
-                ).order_by('?')[:1]
+                )
 
         if request.user.is_anonymous is not True:
             questions = questions.exclude(
                 votequestion__user=request.user
                 )
+
+        questions = questions.order_by('?')[:1]
 
         questions_length = questions.count()
 
