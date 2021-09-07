@@ -196,7 +196,7 @@ class QuestionsViewSet(viewsets.ModelViewSet):
 
         return Response(
                 self.get_serializer(
-                    questions
+                    questions.get()
                 ).data
             )
 
