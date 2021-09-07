@@ -176,33 +176,23 @@ class QuestionsViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], throttle_classes=[UserRateThrottle])
     def random(self, request) -> HttpResponse:
-        if request.user.is_anonymous is True:
-            questions = self.get_annotated_questions().filter(
+        question = self.get_annotated_questions().filter(
                 closed=False
-                )
-            return Response(
-                self.get_serializer(
-                    questions[randint(0, questions.count()-1)]
-                ).data
-            )
-        questions = self.get_annotated_questions().filter(
-                closed=False
-                ).exclude(
+                ).order_by('?')[:1]
+
+        if request.user.is_anonymous is not True:
+            questions = question.exclude(
                 votequestion__user=request.user
                 )
+
         questions_length = questions.count()
+
         if questions_length == 0:
             return Response({"detail": "No Questions Left"}, status=204)
-        if questions_length == 1:
-            return Response(
-                    self.get_serializer(
-                        questions[0]
-                        ).data
-                   )
 
         return Response(
                 self.get_serializer(
-                    questions[randint(0, questions_length-1)]
+                    questions
                 ).data
             )
 
