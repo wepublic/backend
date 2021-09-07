@@ -180,12 +180,12 @@ class QuestionsViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], throttle_classes=[UserRateThrottle])
     def random(self, request) -> HttpResponse:
-        question = self.get_annotated_questions().filter(
+        questions = self.get_annotated_questions().filter(
                 closed=False
                 ).order_by('?')[:1]
 
         if request.user.is_anonymous is not True:
-            questions = question.exclude(
+            questions = questions.exclude(
                 votequestion__user=request.user
                 )
 
