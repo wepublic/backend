@@ -24,6 +24,7 @@ from users.views import UserViewSet
 from wp_news.views import NewsEntryViewSet
 from wp_newsletter.views import NewsLetterAddressViewSet
 from wp_party.views import PartyViewSet
+from fcm_django.api.rest_framework import FCMDeviceAuthorizedViewSet
 
 router = DefaultRouter()
 router.register(r'Tags', TagViewSet, 'tag')
@@ -33,6 +34,8 @@ router.register(r'Users', UserViewSet, 'user')
 router.register(r'News', NewsEntryViewSet, 'news')
 router.register(r'Newsletter', NewsLetterAddressViewSet, 'newsletter')
 router.register(r'Parties', PartyViewSet, 'parties')
+router.register(r'Devices', FCMDeviceAuthorizedViewSet)
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^v1/', include((router.urls, 'wepublic'), namespace='v1')),

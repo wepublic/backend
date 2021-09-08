@@ -20,6 +20,7 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from users.forms import PasswordResetForm
 from django.shortcuts import render
 from wepublic_backend.settings import SUPPORT_ADDRESS, LATEST_VERSION
+from fcm_django.models import FCMDevice
 
 
 # Create your views here.
