@@ -153,7 +153,8 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '300/day',
         'user': '1000/day'
-    }
+    },
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning'
 }
 
 
@@ -182,7 +183,7 @@ NOREPLY_ADDRESS = 'noreply@plus-me.de'
 
 MAILQUEUE_ON = False
 
-LATEST_VERSION = '0.6.0'
+LATEST_VERSION = '0.10.0'
 
 WP_DEFAULT_REPUTATION = [
     {

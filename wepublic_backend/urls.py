@@ -35,7 +35,8 @@ router.register(r'Newsletter', NewsLetterAddressViewSet, 'newsletter')
 router.register(r'Parties', PartyViewSet, 'parties')
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^v1/', include(router.urls)),
+    url(r'^v1/', include((router.urls, 'wepublic'), namespace='v1')),
+    url(r'^v2/', include((router.urls, 'wepublic'), namespace='v2'))
 ]
 
 

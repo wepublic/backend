@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.throttling import UserRateThrottle
 
-from django.db.models import Sum, When, Case, IntegerField, BooleanField, Value
+from django.db.models import Sum, When, Case, IntegerField, Value, Subquery
 from django.db.models.functions import Coalesce
 from users.utils import slack_notify_report
 
@@ -118,22 +118,36 @@ class QuestionsViewSet(viewsets.ModelViewSet):
                 headers=headers
             )
 
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], throttle_classes=[UserRateThrottle])
+    @action(
+        detail=False,
+        methods=['get'],
+        permission_classes=[IsAuthenticated],
+        throttle_classes=[UserRateThrottle],
+        pagination_class=NewestQuestionsSetPagination,
+    )
     def my(self, request):
         """Gets all own and voted for questions."""
-        questions = self.get_queryset().filter(user=request.user).annotate(own=Value(True))
-        serializer = self.get_serializer(questions, many=True)
-        data = serializer.data
+        subquery = Subquery(
+            VoteQuestion.objects.filter(
+                user=request.user,
+                up=True
+            ).values('question_id')
+        )
+        questions = self.get_queryset().filter(
+            Q(user=request.user) | Q(id__in=subquery)
+        ).annotate(
+            own=Value(True)
+        )
 
-        voted_questions = VoteQuestion.objects.filter(Q(user=request.user), Q(up=True))
-        for item in voted_questions:
-            real_question = self.get_queryset().get(pk=item.question.id)
-            serialized_voted_question = self.get_serializer(real_question, many=False).data
-            serialized_voted_question['own'] = False
-            if request.user != real_question.user:
-                data.append(serialized_voted_question)
-
-        return Response(data)
+        if request.version == 'v2':
+            page = self.paginate_queryset(questions)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+        else:
+            serializer = self.get_serializer(questions, many=True)
+            data = serializer.data
+            return Response(data)
 
     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated], throttle_classes=[UserRateThrottle])
     def answers(self, request, pk=None) -> HttpResponse:
@@ -166,33 +180,25 @@ class QuestionsViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], throttle_classes=[UserRateThrottle])
     def random(self, request) -> HttpResponse:
-        if request.user.is_anonymous is True:
-            questions = self.get_annotated_questions().filter(
-                closed=False
-                )
-            return Response(
-                self.get_serializer(
-                    questions[randint(0, questions.count()-1)]
-                ).data
-            )
         questions = self.get_annotated_questions().filter(
                 closed=False
-                ).exclude(
+                )
+
+        if request.user.is_anonymous is not True:
+            questions = questions.exclude(
                 votequestion__user=request.user
                 )
+
+        questions = questions.order_by('?')[:1]
+
         questions_length = questions.count()
+
         if questions_length == 0:
             return Response({"detail": "No Questions Left"}, status=204)
-        if questions_length == 1:
-            return Response(
-                    self.get_serializer(
-                        questions[0]
-                        ).data
-                   )
 
         return Response(
                 self.get_serializer(
-                    questions[randint(0, questions_length-1)]
+                    questions.get()
                 ).data
             )
 
